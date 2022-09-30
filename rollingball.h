@@ -17,6 +17,8 @@ public:
     bool Alive(){
         return mLived >= mLifetime ? true : false;
     }
+    void EnableSpline();
+    void DisableSpline();
 private:
     VisualObject* m_Surface;
     float m_Weight = 0.2f;
@@ -34,7 +36,11 @@ private:
     Vertex* v3;
     int mLived = 0;
     int mLifetime = 600;
-
+    int mSplinePointCounter = 60;
+    void CreateSplinePoint();
+    std::vector<Vertex*> mControlPoints;
+    void EvaluateBezier();
+    bool bDrawSpline = false;
 };
 
 #endif // ROLLINGBALL_H

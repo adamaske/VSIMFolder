@@ -114,4 +114,22 @@ void RollingBall::AddLife()
     mLived += 1;
 }
 
+void RollingBall::EnableSpline()
+{
+    bDrawSpline = true;
+}
+
+void RollingBall::DisableSpline()
+{
+    bDrawSpline = false;
+}
+
+void RollingBall::CreateSplinePoint()
+{
+    QVector3D pos = GetPosition();
+    Vertex* v = new Vertex(pos.x(), pos.y(), pos.z());
+
+    mControlPoints.push_back(v);
+}
+
 
