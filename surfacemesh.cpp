@@ -1,40 +1,102 @@
 #include "surfacemesh.h"
 #include "vertex.h"
+#include <iostream>
+#include <string>
 SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
 {
-    //Vertex'er
-    Vertex v1(-2.4f, 0.45f, 2.f,    1.f, 0.3f,0.5f);
-    Vertex v2(0.f, 0.f, 2.f,        0.3f, 1.f,0.2f);
-    Vertex v3(-2.5f, 0.f, -2.f,     0.5f, 0.6f,1.f);
-    Vertex v4(0.f, .5f, -2.f,       1.f, 0.4f,0.2f);
-    Vertex v5(3.0f, 0.1f, 1.925f,   0.3f, 1.f,0.3f);
-    Vertex v6(3.0f, 0.f, -1.9f,     0.1f, 0.2f,2.f);
+    //K0de for å merge alle tekstfilene tatt fra las2txt
+    //std::string line;
+    //std::ofstream file("../VSIMFolder/HeightData/fullData.txt", std::ios::trunc);
+    //
+    //std::ifstream file1("../VSIMFolder/HeightData/32-1-508-114-75.txt");
+    //std::ifstream file2("../VSIMFolder/HeightData/32-1-508-114-76.txt");
+    //std::ifstream file3("../VSIMFolder/HeightData/32-1-509-114-05.txt");
+    //std::ifstream file4("../VSIMFolder/HeightData/32-1-509-114-06.txt");
+    //std::ifstream file5("../VSIMFolder/HeightData/32-1-509-114-07.txt");
+    //
+    ////The file to be written in is open
+    //if (file.is_open()) { 
+    //    while (std::getline(file1, line)) {
+    //        file << line << '\n';
+    //    };
+    //    while (std::getline(file2, line)) {
+    //        file << line << '\n';
+    //    };
+    //    while (std::getline(file3, line)) {
+    //        file << line << '\n';
+    //    };
+    //    while (std::getline(file4, line)) {
+    //        file << line << '\n';
+    //    };
+    //    while (std::getline(file5, line)) {
+    //        file << line << '\n';
+    //    };
+    //    file1.close();
+    //    file2.close();
+    //    file3.close();
+    //    file4.close();
+    //    file5.close();
+    //}
+    //file.close();
+    //Can now read file to go trough
+    std::ifstream file("../VSIMFolder/HeightData/fullData.txt");
+    std::vector<float> points;
+    if (file.is_open()) {
+        //Lagre linjen den er på
+        std::string line;
+        //For å bruke substr så lagrer jeg sist space plass
+        int lastSpace = 0;
+        //lagrer det i egen string for å gjøre det om til float etterpå
+        std::string number;
+        while (std::getline(file, line)) {
+            lastSpace = 0;
+            for (int i = 0; i < line.size(); i++) {
+                if (line[i] == ' ') {                               
+                    number = line.substr(lastSpace, i-1);
+                    //number.erase(number.end()-2);
+                    points.push_back(std::stod(number));
+                    lastSpace = i;
+                }//Gå fra forrige space til siste, for det siste tallet
+                else if(i == line.size() -1){
+                    number = line.substr(lastSpace, i);
+                    //number.erase(number.end()-2);
+                    points.push_back((std::stof(number)));
+                }
+            }           
+        }
+    }
+    file.close();
 
-    //1
-    mVertices.push_back(v1);
-    mVertices.push_back(v2);
-    mVertices.push_back(v3);
-    mVertices.push_back(v4);
-    mVertices.push_back(v5);
-    mVertices.push_back(v6);
+    //Numerne er ganske ville så gå gjennom, så jeg går gjennom for å endre de
+    for (int i = 0; i < points.size(); i++) {
+        if (points[i] >557000 && points[i] < 558000) {
+            points[i] -= 557250;
+        }
+        else if (points[i] > 6550000 && points[i] < 6560000) {
+            points[i] -= 6550700;
+        }
+    }
 
-    mIndices.push_back(0);
-    mIndices.push_back(1);
-    mIndices.push_back(2);
+    //Swapped y and z axis
+    for (int i = 0; i < points.size(); i+=3) {
+        //qDebug() << points[i] << " " << points[i +1] << " " << points[i+2];
+        mVertices.push_back(Vertex(points[i], points[i + 2], points[i + 1], ((rand() % 10) / 10), ((rand() % 10) / 10), ((rand() % 10) / 10)));
+    }
 
-    mIndices.push_back(1);
-    mIndices.push_back(3);
-    mIndices.push_back(2);
+    for (int i = 0; i < 50; i+=3) {
+        qDebug() << points[i] << " " << points[i +2] << " " << points[i+1];
+    }
 
-    mIndices.push_back(1);
-    mIndices.push_back(5);
-    mIndices.push_back(3);
-
-    mIndices.push_back(1);
-    mIndices.push_back(4);
-    mIndices.push_back(5);
-
-
+    //for(unsigned int i = 0; i < 10000; i++)       // for each row a.k.a. each strip
+    //{
+    //    for(unsigned int j = 0; j < 10000; j++)      // for each column
+    //    {
+    //        for(unsigned int k = 0; k < 2; k++)      // for each side of the strip
+    //        {
+    //            mIndices.push_back(j + 10000 * (i + k));
+    //        }
+    //    }
+    //}
 }
 void SurfaceMesh::init()
 {
@@ -78,7 +140,10 @@ void SurfaceMesh::draw()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEAB);
 
     glUniformMatrix4fv(mMatrixUniform, 1, GL_FALSE, mMatrix.constData());
-    glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, reinterpret_cast<const void*>(0));
+    glPointSize(2.0f);
+    glDrawArrays(GL_POINTS, 0, mVertices.size());
+    //glDrawArrays(GL_TRIANGLES, 0, mVertices.size());//mVertices.size());
+    //glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, reinterpret_cast<const void*>(0));
 }
 
 Result SurfaceMesh::GetHeight(QVector3D pos)

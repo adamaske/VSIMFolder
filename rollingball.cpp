@@ -12,21 +12,28 @@ void RollingBall::SetSurface(VisualObject* surface)
 
 void RollingBall::DoPhysics()
 {
-    QVector3D gravity(0, 9.81f, 0);
+    QVector3D gravity(0, -9.81f, 0);
 
     float radius = 0.125f;
     if(m_Surface){
         //Får resultatet fra surfacemesh
         Result r = dynamic_cast<SurfaceMesh*>(m_Surface)->GetHeight(GetPosition());
+        //Er ballen i luften?
+        if(GetPosition().y() > r.height + 0.2){
+            //Bare tyngdekraften påvirker ballen
+            SetPosition(GetPosition() + oldVel/60 + 1/2*gravity/60);
+            oldVel = oldVel + gravity /60;
+            oldPos = GetPosition();
+            return;
+        }
         //Lagerer vertexene på triangelt
-        Vertex* v1 = &r.v1;
-        Vertex* v2 = &r.v2;
-        Vertex* v3 = &r.v3;
+        v1 = &r.v1;
+        v2 = &r.v2;
+        v3 = &r.v3;
         //Nåværende posistjon
         QVector3D currPos = GetPosition();
         //Finner friksjonen på denne trekanten
-        float friction = r.friction;
-
+        r.height;
         //Sjekk at vertex finnes
         if(v1 && v2 && v3){
             //Lager punkter fra vertexene
@@ -40,7 +47,7 @@ void RollingBall::DoPhysics()
 
             long double t = 1/60;
             //Akselerasjon, Lignign 7
-            QVector3D acc = gravity.y() * QVector3D(normal.x() * normal.y(), normal.y() * normal.z(), pow(normal.y(), 2)-1);
+            QVector3D acc = -gravity.y() * QVector3D(normal.x() * normal.y(), normal.y() * normal.z(), pow(normal.y(), 2)-1);
             //R = r0 + v0t + 1/2at^2
             QVector3D nyPos = currPos + oldVel/60 + 1/2*acc/60;
             //Setter høyde + radius så den sitter på flaten
@@ -100,6 +107,11 @@ void RollingBall::DoPhysics()
 void RollingBall::ResetPhysics()
 {
     oldVel = QVector3D(0,0,0);
+}
+
+void RollingBall::AddLife()
+{
+    mLived += 1;
 }
 
 

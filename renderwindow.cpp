@@ -7,7 +7,7 @@
 #include <QKeyEvent>
 #include <QStatusBar>
 #include <QDebug>
-
+#include <stdlib.h>
 #include <string>
 
 #include "shader.h"
@@ -110,15 +110,7 @@ void RenderWindow::init()
                new SurfaceMesh(mShaders["PlainShader"])});
     mMap.insert(std::pair<std::string, VisualObject*>{"Ball",
                new RollingBall("../VSIMFolder/ball.obj", mShaders["PlainShader"])});
-
-
-    mBall = dynamic_cast<RollingBall*>(mMap["Ball"]);
-
-    if(mBall){
-        mBall->SetSurface(mMap["Surface"]);
-    }
-
-
+    mSurface = dynamic_cast<SurfaceMesh*>(mMap["Surface"]);
     //init every object
     for (auto it = mMap.begin(); it != mMap.end(); it++) {
         //Adds all visual objects to the quadtree
@@ -127,6 +119,8 @@ void RenderWindow::init()
     }
     glBindVertexArray(0);       //unbinds any VertexArray - good practice
 }
+
+
 
 // Called each frame - doing the rendering!!!
 void RenderWindow::render()
@@ -142,20 +136,10 @@ void RenderWindow::render()
     mCamera->init();
     // verticalAngle, aspectRatio, nearPlane,farPlane
     mCamera->perspective(90, static_cast<float>(width()) / static_cast<float>(height()), 0.1, 3000.0);
-    QVector3D ballPos = mMap["Surface"]->GetPosition();
-    mCamera->lookAt(ballPos + QVector3D(0, 2,1), ballPos, QVector3D(0,1,0));
+    //QVector3D ballPos = mMap["Surface"]->GetPosition();
+    mCamera->lookAt(camPos, camLookAt, QVector3D(0, 1, 0));
 
-    //Rain
-    for(int i = 0; i < mRain.size(); i++){
 
-    }
-    //
-    mRainDropTimer++;
-    if(mRainDropTimer > 30){
-        //Spawn more rain
-
-        mRainTimer = 0;
-    }
 
     //Apply camera to all shaders
     for(auto it = mShaders.begin(); it != mShaders.end(); it++){
@@ -171,7 +155,8 @@ void RenderWindow::render()
                                        "cameraPosition");
         }
     }
-
+    //Regn
+    DoRain();
     //Draw all objects
     for (auto it = mMap.begin(); it != mMap.end(); it++) {
         //Set the shader matrixes from camera
@@ -307,37 +292,85 @@ void RenderWindow::keyPressEvent(QKeyEvent *event)
         mMainWindow->close();       //Shuts down the whole program
     }
     if(event->key() == Qt::Key_Space){
-        //Enable physics
-        mMap["Ball"]->EnablePhysics();
-        dynamic_cast<RollingBall*>(mMap["Ball"])->ResetPhysics();
+        //Starte og stoppe regnet
+        if(bIsRaining){
+            StopRain();
+        }else{
+            StartRain();
+        }
     }
-    if(event->key() == Qt::Key_T){
-        //Enable physics
-        mMap["Ball"]->DisablePhysics();
-    }
-
+    QVector3D temp = camPos;
     if(event->key() == Qt::Key_W){
-        mMap["Ball"]->move(1,0,0);
+        camPos.setZ(temp.z() + 10);
     }
 
     if(event->key() == Qt::Key_S){
-        mMap["Ball"]->move(-1,0,0);
+        camPos.setZ(temp.z() - 10);
     }
 
     if(event->key() == Qt::Key_A){
-        mMap["Ball"]->move(0,0,1);
+        camPos.setX(temp.x() + 10);
     }
 
     if(event->key() == Qt::Key_D){
-        mMap["Ball"]->move(0,0,-1);
+        camPos.setX(temp.x() - 10);
     }
 
     if(event->key() == Qt::Key_Q){
-        mMap["Ball"]->move(0,1,0);
+        camPos.setY(temp.y() + 10);
     }
 
     if(event->key() == Qt::Key_E){
-        mMap["Ball"]->move(0,-1,0);
+        camPos.setY(temp.y() - 10);
     }
+}
 
+void RenderWindow::StartRain()
+{
+    bIsRaining = true;
+    //Spawn rain particles
+    int rainAmount = 15;
+    int maxX = 150;
+    float minX = -150;
+    int maxY = 50;
+    float minY = 75;
+    int maxZ = 150;
+    float minZ = -150;
+
+    for(int i = 0; i < rainAmount; i++){
+        QVector3D pos(minX + (rand() % maxX), minY + (rand() % maxY), minZ + (rand() % maxZ));
+        RollingBall* rain = new RollingBall( "",mShaders["PlainShader"]);
+        rain->SetSurface(mSurface);
+        rain->SetPosition(pos);
+        rain->EnablePhysics();
+        mRain.push_back(rain);
+    }
+}
+
+void RenderWindow::StopRain()
+{
+    bIsRaining = false;
+    //Destroy all rain particles
+    for(int i = 0; i < mRain.size(); i++){
+        RollingBall* temp = mRain[i];
+        delete temp;
+    }
+    mRain.clear();
+}
+void RenderWindow::DoRain()
+{
+    if(bIsRaining){
+        for(int i = 0; i < mRain.size(); i++){
+            mRain[i]->AddLife();
+            if(!mRain[i]->Alive()){
+                //remove from pool, draw bspline?
+                RollingBall* temp = mRain[i];
+                mRain.erase(mRain.begin()+i);
+                delete temp;
+                break;
+            }
+            mRain[i]->UpdateTransform();
+            mRain[i]->draw();
+        }
+    }
 }

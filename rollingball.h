@@ -13,6 +13,10 @@ public:
     VisualObject* GetSurface(){return m_Surface;};
     void DoPhysics() override;
     void ResetPhysics();
+    void AddLife();
+    bool Alive(){
+        return mLived >= mLifetime ? true : false;
+    }
 private:
     VisualObject* m_Surface;
     float m_Weight = 0.2f;
@@ -25,7 +29,11 @@ private:
     QVector3D oldNormal;
     QVector3D oldVel = QVector3D(0,0,0);
     QVector3D oldPos;
-
+    Vertex* v1;
+    Vertex* v2;
+    Vertex* v3;
+    int mLived = 0;
+    int mLifetime = 600;
 
 };
 

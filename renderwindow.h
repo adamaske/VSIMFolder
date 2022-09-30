@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QElapsedTimer>
 #include <unordered_map>
+#include <QVector3D>
 
 class QOpenGLContext;
 class Shader;
@@ -38,12 +39,18 @@ private:
 
     //Alt som renders i Map
     std::unordered_map<std::string, VisualObject*> mMap;
-    std::vector<RollingBall> mRain;
-    float mRainDropTimer = 0;
-    int mMaxRainSize = 100;
+    //Regnet
+    std::vector<RollingBall*> mRain;
+    class SurfaceMesh* mSurface;
+    void StartRain();
+    void StopRain();
+    void DoRain();
+    bool bIsRaining = false;
     //Referance to camera
     Camera *mCamera;
-    RollingBall* mBall;
+    QVector3D camPos   {0,0,0};
+    QVector3D camLookAt{0,0,0};
+
     QOpenGLContext *mContext{nullptr};  //Our OpenGL context
     bool mInitialized{false};
 
