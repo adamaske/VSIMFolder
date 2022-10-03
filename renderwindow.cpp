@@ -137,7 +137,7 @@ void RenderWindow::render()
     // verticalAngle, aspectRatio, nearPlane,farPlane
     mCamera->perspective(90, static_cast<float>(width()) / static_cast<float>(height()), 0.1, 3000.0);
     //QVector3D ballPos = mMap["Surface"]->GetPosition();
-    mCamera->lookAt(camPos, camLookAt, QVector3D(0, 1, 0));
+    mCamera->lookAt(camPos, camPos + camLookAt, QVector3D(0, 1, 0));
 
 
 
@@ -299,7 +299,17 @@ void RenderWindow::keyPressEvent(QKeyEvent *event)
             StartRain();
         }
     }
+    if(event->key() == Qt::Key_1){
+       mSurface->SetDrawMode(DrawMode::points);
+    }
+    if(event->key() == Qt::Key_2){
+       mSurface->SetDrawMode(DrawMode::drawElements);
+    }
+    if(event->key() == Qt::Key_3){
+       mSurface->SetDrawMode(DrawMode::arrays);
+    }
     QVector3D temp = camPos;
+    camLookAt = QVector3D(350, 0, 350);
     if(event->key() == Qt::Key_W){
         camPos.setZ(temp.z() + 10);
     }

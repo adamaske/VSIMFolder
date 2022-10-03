@@ -14,7 +14,7 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     //std::ifstream file4("../VSIMFolder/HeightData/32-1-509-114-06.txt");
     //std::ifstream file5("../VSIMFolder/HeightData/32-1-509-114-07.txt");
     //
-    ////The file to be written in is open
+    //The file to be written in is open
     //if (file.is_open()) { 
     //    while (std::getline(file1, line)) {
     //        file << line << '\n';
@@ -38,8 +38,10 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     //    file5.close();
     //}
     //file.close();
+
     //Can now read file to go trough
     std::ifstream file("../VSIMFolder/HeightData/fullData.txt");
+    //Lagre alle puntkene som blir lest
     std::vector<float> points;
     if (file.is_open()) {
         //Lagre linjen den er på
@@ -57,7 +59,7 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
                     points.push_back(std::stod(number));
                     lastSpace = i;
                 }//Gå fra forrige space til siste, for det siste tallet
-                else if(i == line.size() -1){
+                else if(i == line.size()-1){
                     number = line.substr(lastSpace, i);
                     //number.erase(number.end()-2);
                     points.push_back((std::stof(number)));
@@ -73,30 +75,66 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
             points[i] -= 557250;
         }
         else if (points[i] > 6550000 && points[i] < 6560000) {
-            points[i] -= 6550700;
+            points[i] -= 655000;
         }
     }
 
-    //Swapped y and z axis
-    for (int i = 0; i < points.size(); i+=3) {
-        //qDebug() << points[i] << " " << points[i +1] << " " << points[i+2];
-        mVertices.push_back(Vertex(points[i], points[i + 2], points[i + 1], ((rand() % 10) / 10), ((rand() % 10) / 10), ((rand() % 10) / 10)));
+    //Lager convex hull
+    float width = 750;
+    float height = 750;
+    float res = 1;
+    std::vector<Quad> mQuads;
+    for (double i = 0; i < height; i+=res) {
+        for (double j = 0; j < width; j+=res) {
+            //Top right, top left, bottom right, bottom left
+            mQuads.push_back(Quad{ Point{j, i}, Point{j + res, i}, Point{j, i + res}, Point{j + res, i + res} });
+        }
     }
 
-    for (int i = 0; i < 50; i+=3) {
-        qDebug() << points[i] << " " << points[i +2] << " " << points[i+1];
+    //Finn hvem quad hvert punkt er i, høyden til quaden blir dratt 0.1 i retningen av punktet
+    int index = 0;
+    float count = 0;
+    QVector3D pos;
+    for(int i = 0; i < points.size(); i+=3){
+        pos = {points[i], points[i+1], points[i+2]};
+        //Finner hvem indeks i quad vectoren punket ligger i,
+        index = pos.x() + (width * pos.y());
+        if(index < mQuads.size()){
+            mQuads[index].AddHeight(pos.z());
+            count++;
+        }
+    }
+    qDebug() << "Amount of quads added height";
+    qDebug() << count;
+    //Lager vertexer
+    for (int i = 0; i < mQuads.size(); i++) {
+        //Lager vertexer
+        mVertices.push_back(Vertex(mQuads[i].GetCenter().x, mQuads[i].GetHeight(), mQuads[i].GetCenter().y, cos(i), sin(i), tan(i) ));
     }
 
-    //for(unsigned int i = 0; i < 10000; i++)       // for each row a.k.a. each strip
-    //{
-    //    for(unsigned int j = 0; j < 10000; j++)      // for each column
-    //    {
-    //        for(unsigned int k = 0; k < 2; k++)      // for each side of the strip
-    //        {
-    //            mIndices.push_back(j + 10000 * (i + k));
-    //        }
-    //    }
-    //}
+    //Indeksering
+    for(int j = 0; j < height-1; j++){
+        for(int i = 0; i < width-1; i++){
+            for(int k = 0; k < 2; k++){
+                if(k == 0){
+                    mIndices.push_back(i+(width*j));
+
+                    mIndices.push_back(i+(width*j)+1);
+
+                    mIndices.push_back(i+(width*j)+width);
+                }else{
+                    mIndices.push_back(i+(width*j)+1);
+
+                    mIndices.push_back(i+(width*j)+width);
+
+                    mIndices.push_back(i+(width*j)+width+1);
+                }
+            }
+        }
+    }
+
+
+    mQuads.clear();
 }
 void SurfaceMesh::init()
 {
@@ -133,6 +171,11 @@ void SurfaceMesh::init()
     glBindVertexArray(0);
 
 }
+
+void SurfaceMesh::SetDrawMode(DrawMode m)
+{
+    mDrawMode = m;
+}
 void SurfaceMesh::draw()
 {
     initializeOpenGLFunctions();
@@ -140,10 +183,19 @@ void SurfaceMesh::draw()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mEAB);
 
     glUniformMatrix4fv(mMatrixUniform, 1, GL_FALSE, mMatrix.constData());
-    glPointSize(2.0f);
-    glDrawArrays(GL_POINTS, 0, mVertices.size());
-    //glDrawArrays(GL_TRIANGLES, 0, mVertices.size());//mVertices.size());
-    //glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, reinterpret_cast<const void*>(0));
+
+    switch(mDrawMode){
+        case points:
+        glPointSize(2.0f);
+        glDrawArrays(GL_POINTS, 0, mVertices.size());
+        break;
+    case drawElements:
+        glDrawArrays(GL_TRIANGLES, 0, mVertices.size());//mVertices.size());
+        break;
+    case arrays:
+        glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, reinterpret_cast<const void*>(0));
+        break;
+    }
 }
 
 Result SurfaceMesh::GetHeight(QVector3D pos)

@@ -49,7 +49,7 @@ private:
     //Referance to camera
     Camera *mCamera;
     QVector3D camPos   {0,0,0};
-    QVector3D camLookAt{0,0,0};
+    QVector3D camLookAt{0,0,10};
 
     QOpenGLContext *mContext{nullptr};  //Our OpenGL context
     bool mInitialized{false};
