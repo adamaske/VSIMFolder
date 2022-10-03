@@ -43,6 +43,7 @@ private:
     void CreateSpline();
     QVector3D EvaluateBezier(float t);
     bool bDrawSpline = false;
+    class SurfaceMesh* mSurfaceMesh;
 };
 
 #endif // ROLLINGBALL_H

@@ -8,6 +8,7 @@ RollingBall::RollingBall(std::string fileName, Shader* shader) : ObjMesh(fileNam
 void RollingBall::SetSurface(VisualObject* surface)
 {
     m_Surface = surface;
+    mSurfaceMesh = dynamic_cast<SurfaceMesh*>(m_Surface);
 }
 
 void RollingBall::DoPhysics()
@@ -15,30 +16,24 @@ void RollingBall::DoPhysics()
     QVector3D gravity(0, -9.81f, 0);
 
     float radius = 0.125f;
-    if(m_Surface){
+    if(mSurfaceMesh){
         //Får resultatet fra surfacemesh
-        Result r = dynamic_cast<SurfaceMesh*>(m_Surface)->GetHeight(GetPosition());
-        //Er ballen i luften?
+        Result r = mSurfaceMesh->GetHeight(GetPosition());
+        //Er ballen i luften? Bare rull på overflaten så lenge ballen er minst x nære overflaten
         if(GetPosition().y() > r.height + 0.2){
             //Bare tyngdekraften påvirker ballen
             SetPosition(GetPosition() + oldVel/60 + 1/2*gravity/60);
             oldVel = oldVel + gravity /60;
             oldPos = GetPosition();
+
             return;
         }
-        //Bare tyngdekraften påvirker ballen
-        SetPosition(GetPosition() + oldVel/60 + 1/2*gravity/60);
-        oldVel = oldVel + gravity /60;
-        oldPos = GetPosition();
-        return;
         //Lagerer vertexene på triangelt
         v1 = &r.v1;
         v2 = &r.v2;
         v3 = &r.v3;
         //Nåværende posistjon
         QVector3D currPos = GetPosition();
-        //Finner friksjonen på denne trekanten
-        r.height;
         //Sjekk at vertex finnes
         if(v1 && v2 && v3){
             //Lager punkter fra vertexene
@@ -61,10 +56,15 @@ void RollingBall::DoPhysics()
             SetPosition(nyPos);
             //Oppdater hastigheten
             oldVel = oldVel + acc /60;
-
+            oldv1 = &r.v1;
+            oldv2 = &r.v2;
+            oldv3 = &r.v3;
+            oldNormal = normal;
+            oldPos = GetPosition();
+            return;
             //SJekk om ballen er på ny trekant
             if(oldv1 && oldv2 && oldv3){
-                if(normal != oldNormal){
+                if(normal != oldNormal && oldNormal != QVector3D(0,0,0) && normal + oldNormal != QVector3D(0,0,0)){
                      //Ballen har rullet over på nytt triangel
                      //Beregner normalen til kolisjonsplanet, ligning 9
                      //Lage punkter fra de gamle vertexene

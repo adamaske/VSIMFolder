@@ -88,9 +88,9 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     }
 
     //Lager convex hull
-    float width = 200;
-    float height = 200;
-    float res = 5;
+
+
+
     std::vector<Quad> mQuads;
     for (double i = 0; i < height; i+=res) {
         for (double j = 0; j < width; j+=res) {
@@ -205,65 +205,44 @@ Result SurfaceMesh::GetHeight(QVector3D pos)
 {
     Result r;
     float a = 0, b = 0, c = 0, height = 0;
-
+    float x = pos.x();
+    float z = pos.z();
+    qDebug()<< "Player pos: " << x << ", " << z;
+    //First vertex of the triangle
+    v1 = mVertices[(x*(width/res))+z];
+    //Get the vertex to the right of v1
+    v2 = mVertices[((x)*(width/res))+z+1];
+    //Get the vertex beneath v1
+    v3 = mVertices[((x+1)*(width/res))+z+1];
+    //Vertex under and right of v1
+    v4 = mVertices[((x+1)*(width/res))+z];
     //Sjekker for trekant 1
-    QVector3D bary =  GetBarycentric(pos, mVertices[0], mVertices[1], mVertices[2]);
+    QVector3D bary =  GetBarycentric(pos, v1, v2, v3);
     if(((0 <= bary.x()) && (bary.x() <= 1)) && ((0 <= bary.y()) && (bary.y() <= 1)) && ((0 <= bary.z()) && (bary.z() <= 1))){
         //Er denne trekanten
-        a = mVertices[0].y * bary.x();
-        b = mVertices[1].y * bary.y();
-        c = mVertices[2].y * bary.z();
+        a = v1.y * bary.x();
+        b = v2.y * bary.y();
+        c = v3.y * bary.z();
         height = a + b + c;
         r.height = height;
-        r.v1 = mVertices[0];
-        r.v2 = mVertices[1];
-        r.v3 = mVertices[2];
+        r.v1 = v1;
+        r.v2 = v2;
+        r.v3 = v3;
+        qDebug() << "Returned triangle 1" << r.height;
+        r.friction = 0.2;
+        return r;
+    }else{
+        bary = GetBarycentric(pos, v1, v2, v4);
+        //Er denne trekanten
+        a = v1.y * bary.x();
+        b = v2.y * bary.y();
+        c = v4.y * bary.z();
+        height = a + b + c;
+        r.height = height;
+        r.v1 = v1;
+        r.v2 = v2;
+        r.v3 = v4;
         qDebug() << "Returned triangle 1";
-        r.friction = 0.2;
-        return r;
-    }
-    bary = GetBarycentric(pos, mVertices[1], mVertices[3], mVertices[2]);
-    if(((0 <= bary.x()) && (bary.x() <= 1)) && ((0 <= bary.y()) && (bary.y() <= 1)) && ((0 <= bary.z()) && (bary.z() <= 1))){
-        //Er denne trekanten
-        a = mVertices[1].y * bary.x();
-        b = mVertices[3].y * bary.y();
-        c = mVertices[2].y * bary.z();
-        height = a + b + c;
-        r.height = height;
-        r.v1 = mVertices[1];
-        r.v2 = mVertices[3];
-        r.v3 = mVertices[2];
-        qDebug() << "Returned triangle 2";
-        r.friction = 0.2;
-        return r;
-    }
-    bary = GetBarycentric(pos, mVertices[1], mVertices[5], mVertices[3]);
-    if(((0 <= bary.x()) && (bary.x() <= 1)) && ((0 <= bary.y()) && (bary.y() <= 1)) && ((0 <= bary.z()) && (bary.z() <= 1))){
-        //Er denne trekanten
-        a = mVertices[1].y * bary.x();
-        b = mVertices[5].y * bary.y();
-        c = mVertices[3].y * bary.z();
-        height = a + b + c;
-        r.height = height;
-        r.v1 = mVertices[1];
-        r.v2 = mVertices[5];
-        r.v3 = mVertices[3];
-        qDebug() << "Returned triangle 3";
-        r.friction = 0.4;
-        return r;
-    }
-    bary = GetBarycentric(pos, mVertices[1], mVertices[4], mVertices[5]);
-    if(((0 <= bary.x()) && (bary.x() <= 1)) && ((0 <= bary.y()) && (bary.y() <= 1)) && ((0 <= bary.z()) && (bary.z() <= 1))){
-        //Er denne trekanten
-        a = mVertices[1].y * bary.x();
-        b = mVertices[4].y * bary.y();
-        c = mVertices[5].y * bary.z();
-        height = a + b + c;
-        r.height = height;
-        r.v1 = mVertices[1];
-        r.v2 = mVertices[4];
-        r.v3 = mVertices[5];
-        qDebug() << "Returned triangle 4";
         r.friction = 0.2;
         return r;
     }

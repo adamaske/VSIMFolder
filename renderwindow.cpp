@@ -108,8 +108,6 @@ void RenderWindow::init()
     //creating objects to be drawn
     mMap.insert(std::pair<std::string, VisualObject*>{"Surface",
                new SurfaceMesh(mShaders["PlainShader"])});
-    mMap.insert(std::pair<std::string, VisualObject*>{"Ball",
-               new RollingBall("../VSIMFolder/ball.obj", mShaders["PlainShader"])});
     mSurface = dynamic_cast<SurfaceMesh*>(mMap["Surface"]);
     //init every object
     for (auto it = mMap.begin(); it != mMap.end(); it++) {
@@ -353,6 +351,7 @@ void RenderWindow::StartRain()
         rain->init();
         rain->SetSurface(mSurface);
         rain->SetPosition(pos);
+        rain->SetScale(QVector3D(5,5,5));
         qDebug() << pos;
         rain->EnablePhysics();
         mRain.push_back(rain);

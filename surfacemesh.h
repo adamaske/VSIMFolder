@@ -82,7 +82,19 @@ public:
     //
     Result GetHeight(QVector3D pos);
 
+    float width = 200;
+    float height = 200;
+    float res = 5;
 
+    //Barysentriske ting
+    //First v
+    Vertex v1;
+    //Get the;
+    Vertex v2;
+    //Get the;
+    Vertex v3;
+    //Vertex ;
+    Vertex v4;
 };
 
 #endif // SURFACEMESH_H
