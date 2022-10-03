@@ -44,6 +44,14 @@ private:
     QVector3D EvaluateBezier(float t);
     bool bDrawSpline = false;
     class SurfaceMesh* mSurfaceMesh;
+
+    QVector3D p1;
+    QVector3D p2;
+    QVector3D p3;
+    QVector3D a;
+    QVector3D b;
+    QVector3D normal;
+    float radius = 0.575f;
 };
 
 #endif // ROLLINGBALL_H

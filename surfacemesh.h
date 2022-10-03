@@ -33,17 +33,15 @@ struct Quad {
     Point bottomRight;
     Point bottomLeft;
 
-    float height = 0;
-    int amount = 0;
+    float height = 40;
+    int amount = 1;
     void AddHeight(float h){
-        height += 0.1;
+        height += h;
         amount++;
     }
     float GetHeight() {
-        if(amount == 0 || height == 0){
-            return 1;
-        }
-        return height;
+
+        return height / amount;
     }
     Point GetCenter() {
         return Point{ (topRight.x + topLeft.x) / 2, (topRight.y + bottomLeft.y) / 2};
@@ -82,8 +80,8 @@ public:
     //
     Result GetHeight(QVector3D pos);
 
-    float width = 200;
-    float height = 200;
+    float width =600;
+    float height = 600;
     float res = 5;
 
     //Barysentriske ting
@@ -95,6 +93,18 @@ public:
     Vertex v3;
     //Vertex ;
     Vertex v4;
+
+    QVector3D a;
+    QVector3D b;
+    QVector3D c;
+
+    QVector3D x1;
+    QVector3D x2;
+
+     QVector3D normal;
+
+     QVector3D p;
+     QVector3D q;
 };
 
 #endif // SURFACEMESH_H

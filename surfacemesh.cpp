@@ -69,6 +69,7 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     }
     file.close();
 
+
     //Numerne er ganske ville så gå gjennom, så jeg går gjennom for å endre de
     for (int i = 0; i < points.size(); i++) {
         if (points[i] >557000 && points[i] < 558000) {
@@ -76,6 +77,10 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
         }
         else if (points[i] > 6550000 && points[i] < 6560000) {
             points[i] -= 6550293;
+        }
+
+        if(points[i] > 600){
+            points[i] = 600;
         }
     }
 
@@ -86,7 +91,39 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
         }
         return;
     }
+    float lowestX   = 150;
+    float lowestY   = 150;
+    float lowestZ   = 150;
+    float highestX  = 150;
+    float highestY  = 150;
+    float highestZ  = 150;
+    for(int i = 0; i < points.size(); i+=3){
+        if(points[i] > highestX){
+            highestX = points[i];
+        }
+        if(points[i] < lowestX){
+            lowestX = points[i];
+        }
+        if(points[i+1] > highestY){
+            highestY = points[i+1];
+        }
+        if(points[i+1] < lowestY){
+            lowestY = points[i+1];
+        }
+        if(points[i+2] > highestZ){
+            highestZ = points[i+2];
+        }
+        if(points[i+2] < lowestZ){
+            lowestZ = points[i+2];
+        }
+    }
 
+    qDebug() << lowestX ;
+    qDebug() << lowestY ;
+    qDebug() << lowestZ ;
+    qDebug() << highestX;
+    qDebug() << highestY;
+    qDebug() << highestZ;
     //Lager convex hull
 
 
@@ -104,19 +141,21 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     QVector3D pos;
     for(int i = 0; i < points.size(); i+=3){
         pos = {points[i], points[i+1], points[i+2]};
-        //qDebug() << "Point coords: ";
-        //qDebug() << pos.x() << pos.y() << pos.z();
-        //Finner hvem indeks i quad vectoren punket ligger i,
-        index = pos.x() + (width * (pos.y()));
+        //if(pos.x() >= width-1 || pos.y() >?){
+        //    return;
+        //}
+        //Finner hvem indeks i quad vectoren punket ligger i
+        //Denne funksjonen bør fungere til på finne riktig index
+        index = pos.x() + (width/res * (pos.y()));
         if(index < mQuads.size()){
-            mQuads[index].AddHeight(pos.z());
+            mQuads[trunc(index)].AddHeight(pos.z());
         }
     }
-    //mQuads[0].AddHeight(200);
+
     //Lager vertexer
     for (int i = 0; i < mQuads.size(); i++) {
         //Lager vertexer
-        mVertices.push_back(Vertex(mQuads[i].topRight.x, mQuads[i].GetHeight(), mQuads[i].topRight.y, sin(i), cos(i), tan(i)));
+        mVertices.push_back(Vertex(mQuads[i].GetCenter().x, mQuads[i].GetHeight(), mQuads[i].GetCenter().y, sin(i), cos(i), tan(i)));
     }
 
     //Indeksering
@@ -205,17 +244,20 @@ Result SurfaceMesh::GetHeight(QVector3D pos)
 {
     Result r;
     float a = 0, b = 0, c = 0, height = 0;
-    float x = pos.x();
-    float z = pos.z();
-    qDebug()<< "Player pos: " << x << ", " << z;
+    float x = 15;//pos.x();
+    float z = 15;//pos.z();
+    qDebug() << "X pos " << x;
+    qDebug() << "1 index choosen = " << x+((width/res)*z/res)-1;
+    qDebug() << "Z pos " << z;
+    qDebug() << "1 index choosen = " << x+((width/res)*z/res)-1;
     //First vertex of the triangle
-    v1 = mVertices[(x*(width/res))+z];
-    //Get the vertex to the right of v1
-    v2 = mVertices[((x)*(width/res))+z+1];
+    v1 = mVertices[x+((width/res)*z/res)-1];
+    //Get the vertex to the right o/resf v1
+    v2 = mVertices[x+1+((width/res)*z/res)-1];
     //Get the vertex beneath v1
-    v3 = mVertices[((x+1)*(width/res))+z+1];
+    v3 = mVertices[x+((width/res)*z/res)+(width/res)-1];
     //Vertex under and right of v1
-    v4 = mVertices[((x+1)*(width/res))+z];
+    v4 = mVertices[x+1+((width/res)*z/res)+(width/res)];
     //Sjekker for trekant 1
     QVector3D bary =  GetBarycentric(pos, v1, v2, v3);
     if(((0 <= bary.x()) && (bary.x() <= 1)) && ((0 <= bary.y()) && (bary.y() <= 1)) && ((0 <= bary.z()) && (bary.z() <= 1))){
@@ -233,38 +275,42 @@ Result SurfaceMesh::GetHeight(QVector3D pos)
         return r;
     }else{
         bary = GetBarycentric(pos, v1, v2, v4);
-        //Er denne trekanten
-        a = v1.y * bary.x();
-        b = v2.y * bary.y();
-        c = v4.y * bary.z();
-        height = a + b + c;
-        r.height = height;
-        r.v1 = v1;
-        r.v2 = v2;
-        r.v3 = v4;
-        qDebug() << "Returned triangle 1";
-        r.friction = 0.2;
-        return r;
+        if(((0 <= bary.x()) && (bary.x() <= 1)) && ((0 <= bary.y()) && (bary.y() <= 1)) && ((0 <= bary.z()) && (bary.z() <= 1))){
+            //Er denne trekanten
+            a = v1.y * bary.x();
+            b = v2.y * bary.y();
+            c = v4.y * bary.z();
+            height = a + b + c;
+            r.height = height;
+            r.v1 = v1;
+            r.v2 = v2;
+            r.v3 = v4;
+            qDebug() << "Returned triangle 2" << r.height;
+            r.friction = 0.2;
+            return r;
+        }
+
     }
+    qDebug() << "Returned no triangle, wrong vertexes";
     return r;
 }
 
 QVector3D SurfaceMesh::GetBarycentric(QVector3D point, Vertex v1,  Vertex v2, Vertex v3){
     double u = 0, v = 0, w = 0;
-    QVector3D a(v1.x,v1.y,v1.z);
-    QVector3D b(v2.x,v2.y,v2.z);
-    QVector3D c(v3.x,v3.y,v3.z);
+    a = QVector3D(v1.x,v1.y,v1.z);
+    b = QVector3D(v2.x,v2.y,v2.z);
+    c = QVector3D(v3.x,v3.y,v3.z);
     //Finner x
-    QVector3D x1 = b - a;
-    QVector3D x2 = c - a;
+    x1 = b - a;
+    x2 = c - a;
     x1.setY(0);
     x2.setY(0);
-    QVector3D normal = QVector3D::crossProduct(x1, x2);
+    normal = QVector3D::crossProduct(x1, x2);
     float x = normal.length();
     //Regner kryssprodukt av p og q, og deler på x
     //Bruker a - point, b - point og c - point og kryssproduktet av kombinasjonen av de
-    QVector3D p = b - point;
-    QVector3D q = c - point;
+    p = b - point;
+    q = c - point;
     p.setY(0);
     q.setY(0);
     //Kryss produkt for u, delt på x
