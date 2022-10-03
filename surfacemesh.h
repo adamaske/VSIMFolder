@@ -33,14 +33,17 @@ struct Quad {
     Point bottomRight;
     Point bottomLeft;
 
-    float height = 1;
-    int amount = 1;
+    float height = 0;
+    int amount = 0;
     void AddHeight(float h){
-        height += h;
+        height += 0.1;
         amount++;
     }
     float GetHeight() {
-        return height / amount;
+        if(amount == 0 || height == 0){
+            return 1;
+        }
+        return height;
     }
     Point GetCenter() {
         return Point{ (topRight.x + topLeft.x) / 2, (topRight.y + bottomLeft.y) / 2};

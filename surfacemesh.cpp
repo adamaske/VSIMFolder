@@ -72,17 +72,42 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     //Numerne er ganske ville så gå gjennom, så jeg går gjennom for å endre de
     for (int i = 0; i < points.size(); i++) {
         if (points[i] >557000 && points[i] < 558000) {
-            points[i] -= 557250;
+            points[i] -= 557061;
         }
         else if (points[i] > 6550000 && points[i] < 6560000) {
-            points[i] -= 655000;
+            points[i] -= 6550293;
         }
+    }
+    //Start points from 0
+    //float lowestX = 200;
+    //float lowestY = 200;
+    //float lowestZ = 200;
+    //for(int i = 0; i < points.size(); i+=3){
+    //   if(points[i] < lowestX){
+    //       lowestX = points[i];
+    //   }
+    //   if(points[i+1] < lowestY){
+    //       lowestY = points[i+1];
+    //   }
+    //   if(points[i+2] < lowestZ){
+    //       lowestZ = points[i+2];
+    //   }
+    //}
+    //qDebug() << lowestX;
+    //qDebug() << lowestY;
+    //qDebug() << lowestZ;
+    if(false){
+        for (int i = 0; i < points.size(); i+=3) {
+            //Lager vertexer
+            mVertices.push_back(Vertex(points[i], points[i+2], points[i+1], cos(sin(tan(i))), sin(cos(tan(i))), tan(sin(cos(i)))));
+        }
+        return;
     }
 
     //Lager convex hull
-    float width = 750;
-    float height = 750;
-    float res = 1;
+    float width = 200;
+    float height = 200;
+    float res = 5;
     std::vector<Quad> mQuads;
     for (double i = 0; i < height; i+=res) {
         for (double j = 0; j < width; j+=res) {
@@ -92,42 +117,37 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     }
 
     //Finn hvem quad hvert punkt er i, høyden til quaden blir dratt 0.1 i retningen av punktet
-    int index = 0;
-    float count = 0;
+    float index = 0;
     QVector3D pos;
     for(int i = 0; i < points.size(); i+=3){
         pos = {points[i], points[i+1], points[i+2]};
+        //qDebug() << "Point coords: ";
+        //qDebug() << pos.x() << pos.y() << pos.z();
         //Finner hvem indeks i quad vectoren punket ligger i,
-        index = pos.x() + (width * pos.y());
+        index = pos.x() + (width * (pos.y()));
         if(index < mQuads.size()){
             mQuads[index].AddHeight(pos.z());
-            count++;
         }
     }
-    qDebug() << "Amount of quads added height";
-    qDebug() << count;
+    //mQuads[0].AddHeight(200);
     //Lager vertexer
     for (int i = 0; i < mQuads.size(); i++) {
         //Lager vertexer
-        mVertices.push_back(Vertex(mQuads[i].GetCenter().x, mQuads[i].GetHeight(), mQuads[i].GetCenter().y, cos(i), sin(i), tan(i) ));
+        mVertices.push_back(Vertex(mQuads[i].topRight.x, mQuads[i].GetHeight(), mQuads[i].topRight.y, sin(i), cos(i), tan(i)));
     }
 
     //Indeksering
-    for(int j = 0; j < height-1; j++){
-        for(int i = 0; i < width-1; i++){
+    for(int j = 0; j < (height/res)-1; j++){
+        for(int i = 0; i < (width/res)-1; i++){
             for(int k = 0; k < 2; k++){
                 if(k == 0){
-                    mIndices.push_back(i+(width*j));
-
-                    mIndices.push_back(i+(width*j)+1);
-
-                    mIndices.push_back(i+(width*j)+width);
+                    mIndices.push_back(i+((width/res)*j));
+                    mIndices.push_back(i+((width/res)*j)+1);
+                    mIndices.push_back(i+((width/res)*j)+width/res);
                 }else{
-                    mIndices.push_back(i+(width*j)+1);
-
-                    mIndices.push_back(i+(width*j)+width);
-
-                    mIndices.push_back(i+(width*j)+width+1);
+                    mIndices.push_back(i+((width/res)*j)+1);
+                    mIndices.push_back(i+((width/res)*j)+width/res);
+                    mIndices.push_back(i+((width/res)*j)+width/res+1);
                 }
             }
         }
@@ -202,6 +222,7 @@ Result SurfaceMesh::GetHeight(QVector3D pos)
 {
     Result r;
     float a = 0, b = 0, c = 0, height = 0;
+
     //Sjekker for trekant 1
     QVector3D bary =  GetBarycentric(pos, mVertices[0], mVertices[1], mVertices[2]);
     if(((0 <= bary.x()) && (bary.x() <= 1)) && ((0 <= bary.y()) && (bary.y() <= 1)) && ((0 <= bary.z()) && (bary.z() <= 1))){
