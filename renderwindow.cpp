@@ -341,20 +341,23 @@ void RenderWindow::StartRain()
     //Spawn rain particles
     int rainAmount = 15;
     int maxX = 150;
-    float minX = -150;
+    float minX = 0;
     int maxY = 50;
     float minY = 75;
     int maxZ = 150;
-    float minZ = -150;
+    float minZ = 0;
 
     for(int i = 0; i < rainAmount; i++){
         QVector3D pos(minX + (rand() % maxX), minY + (rand() % maxY), minZ + (rand() % maxZ));
-        RollingBall* rain = new RollingBall( "",mShaders["PlainShader"]);
+        RollingBall* rain = new RollingBall( "../VSIMFolder/ball.obj",mShaders["PlainShader"]);
+        rain->init();
         rain->SetSurface(mSurface);
         rain->SetPosition(pos);
+        qDebug() << pos;
         rain->EnablePhysics();
         mRain.push_back(rain);
     }
+    qDebug() << "Started rain!";
 }
 
 void RenderWindow::StopRain()
@@ -366,6 +369,7 @@ void RenderWindow::StopRain()
         delete temp;
     }
     mRain.clear();
+    qDebug() << "Stopped rain!";
 }
 void RenderWindow::DoRain()
 {

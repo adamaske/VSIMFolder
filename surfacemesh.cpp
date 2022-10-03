@@ -78,24 +78,7 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
             points[i] -= 6550293;
         }
     }
-    //Start points from 0
-    //float lowestX = 200;
-    //float lowestY = 200;
-    //float lowestZ = 200;
-    //for(int i = 0; i < points.size(); i+=3){
-    //   if(points[i] < lowestX){
-    //       lowestX = points[i];
-    //   }
-    //   if(points[i+1] < lowestY){
-    //       lowestY = points[i+1];
-    //   }
-    //   if(points[i+2] < lowestZ){
-    //       lowestZ = points[i+2];
-    //   }
-    //}
-    //qDebug() << lowestX;
-    //qDebug() << lowestY;
-    //qDebug() << lowestZ;
+
     if(false){
         for (int i = 0; i < points.size(); i+=3) {
             //Lager vertexer
@@ -329,6 +312,7 @@ QVector3D SurfaceMesh::GetBarycentric(QVector3D point, Vertex v1,  Vertex v2, Ve
     return QVector3D(u, v, w);
 
 }
+
 
 
 

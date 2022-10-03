@@ -26,6 +26,11 @@ void RollingBall::DoPhysics()
             oldPos = GetPosition();
             return;
         }
+        //Bare tyngdekraften påvirker ballen
+        SetPosition(GetPosition() + oldVel/60 + 1/2*gravity/60);
+        oldVel = oldVel + gravity /60;
+        oldPos = GetPosition();
+        return;
         //Lagerer vertexene på triangelt
         v1 = &r.v1;
         v2 = &r.v2;
@@ -131,5 +136,53 @@ void RollingBall::CreateSplinePoint()
 
     mControlPoints.push_back(v);
 }
+
+void RollingBall::CreateSpline()
+{
+    float step = 0.1;
+    float n = mControlPoints.size()-1;
+    float d = 2;
+    //Skjøter i hver ende
+    float s = d + 1;
+    float total = n + d + 1;
+    //Lager skjøtevektoren
+    std::vector<float> t;
+    for(int i = 0; i < total-s; i++){
+        if(i == 0){
+            for(int k = 0 ; k < s ; k++){
+                t.push_back(i);
+            }
+        }else
+        if(i == total-s-1){
+            for(int k = 0; k < s; k++){
+                t.push_back(i);
+            }
+        }else{
+            t.push_back(i);
+        }
+    }
+
+    //Trenger basisfunksjoner??
+
+    for(float time = 0; time < 1; time += step){
+        QVector3D point = EvaluateBezier(time);
+        mVisualPoints.push_back(new Vertex(point.x(), point.y(), point.z(), 1, 1,1));
+    }
+
+}
+
+QVector3D RollingBall::EvaluateBezier(float t)
+{
+
+    return QVector3D{};
+}
+
+//int RollingBall::FindKnotInterval(float x){
+//    int my = n-1;
+//    while(x < t[my]){
+//        my--;
+//    }
+//    return my;
+//}
 
 

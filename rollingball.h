@@ -15,7 +15,7 @@ public:
     void ResetPhysics();
     void AddLife();
     bool Alive(){
-        return mLived >= mLifetime ? true : false;
+        return mLived <= mLifetime ? true : false;
     }
     void EnableSpline();
     void DisableSpline();
@@ -39,7 +39,9 @@ private:
     int mSplinePointCounter = 60;
     void CreateSplinePoint();
     std::vector<Vertex*> mControlPoints;
-    void EvaluateBezier();
+    std::vector<Vertex*> mVisualPoints;
+    void CreateSpline();
+    QVector3D EvaluateBezier(float t);
     bool bDrawSpline = false;
 };
 
