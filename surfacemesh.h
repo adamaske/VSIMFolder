@@ -32,7 +32,7 @@ struct Quad {
     Point bottomLeft;
 
     float height = 1;
-    int amount = 1;
+    int amount = 0;
     void AddHeight(float h){
 
         height += h;
@@ -42,10 +42,10 @@ struct Quad {
         height = h;
     }
     float GetHeight() {
-        //if(amount == 0 || height == 0){
-        //    return 1;
-        //}
-        return height;
+        if(amount == 0 || height == 0){
+            return 15;
+        }
+        return height / amount;
     }
     Point GetCenter() {
         return Point{ (topRight.x + topLeft.x) / 2, (topRight.y + bottomLeft.y) / 2};
@@ -68,7 +68,7 @@ public:
 
     float width =   300;
     float height=   300;
-    float res =     2 ;
+    float res =     20 ;
 
     //Barysentriske ting
     //First v

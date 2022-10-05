@@ -20,7 +20,7 @@ void RollingBall::DoPhysics()
         //Får resultatet fra surfacemesh
         Result r = mSurfaceMesh->GetHeight(GetPosition());
         //Er ballen i luften? Bare rull på overflaten så lenge ballen er minst x nære overflaten
-        if(GetPosition().y() > r.height + 0.2){
+        if(GetPosition().y() > r.height + 1){
             //Bare tyngdekraften påvirker ballen
             SetPosition(GetPosition() + oldVel/60 + 1/2*gravity/60);
             oldVel = oldVel + gravity /60;

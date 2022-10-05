@@ -32,24 +32,66 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     file.close();
 
 
+
     //Numerne er ganske ville så gå gjennom, så jeg går gjennom for å endre de
+    //for (int i = 0; i < points.size(); i++) {
+    //    if (points[i] >557000 && points[i] < 558000) {
+    //        points[i] -= 557060;
+    //    }
+    //    else if (points[i] > 6550000 && points[i] < 6560000) {
+    //        points[i] -= 6550292;
+    //    }
+    //}
     for (int i = 0; i < points.size(); i++) {
         if (points[i] >557000 && points[i] < 558000) {
-            points[i] -= 557060;
+            points[i] /= 100000;
         }
         else if (points[i] > 6550000 && points[i] < 6560000) {
-            points[i] -= 6550292;
+            points[i] /= 1000000;
         }
+        points[i] = trunc(points[i]);
     }
 
-    if(0){
-        for (int i = 0; i < points.size(); i+=3) {
-            //Lager vertexer            
-            mVertices.push_back(Vertex(points[i], points[i+2], points[i+1], cos(sin(tan(i))), sin(cos(tan(i))), tan(sin(cos(i)))));
-            return;
+    if(true){
+        for(int i= 0; i < points.size(); i+=3){
+            mVertices.push_back(Vertex(points[i], points[i+2], points[+1], 1,1,1));
+        }
+        return;
+    }
+    qDebug() << "Amount of points : " << points.size();
+
+    float highestX;
+    float  lowestX;
+    float highestY;
+    float  lowestY;
+    float highestZ;
+    float  lowestZ;
+    for(int i = 0; i < points.size(); i+=3){
+        if(points[i] > highestX){
+            highestX = points[i];
+        }
+        if(points[i] < lowestX){
+            lowestX = points[i];
+        }
+        if(points[i+1] > highestY){
+            highestY = points[i+1];
+        }
+        if(points[i+1] < lowestY){
+            lowestY = points[i+1];
+        }
+        if(points[i+2] > highestZ){
+            highestZ = points[i+2];
+        }
+        if(points[i+2] < lowestZ){
+            lowestZ = points[i+2];
         }
     }
-
+    qDebug() << "Highest X: " << highestX;
+    qDebug() << "Lowest  X: " <<  lowestX;
+    qDebug() << "Highest Y: " << highestY;
+    qDebug() << "Lowest  Y: " <<  lowestY;
+    qDebug() << "Highest Z: " << highestZ;
+    qDebug() << "Lowest  Z: " <<  lowestZ;
     //Lager convex hull
     std::vector<Quad> mQuads;
     for (double i = 0; i < height; i+=res) {
@@ -65,24 +107,25 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     for(int i = 0; i < points.size(); i+=3){
         pos = {points[i], points[i+1], points[i+2]};
         //Incase the points are outside the width of convex hull
-        if(pos.x() > width || pos.y() > height){
-            break;
+        if(pos.x() > width || pos.y() > height || pos.x() < 0 || pos.y() < 0 || pos.z() <0){
+
+        }else{
+            //pos /= res;
+            index = (pos.x()/res) + (((width/res)-1) * pos.y()/res);
+            index = trunc(index);
+            //qDebug() << " Found index " << index << " for point " << pos;
+            if(index < mQuads.size()){
+                mQuads[index].AddHeight(pos.z());
+            }
         }
-        //pos /= res;
-        index = pos.x() + ((width-1) * pos.y());
-        //qDebug() << " Found index " << index << " for point " << pos;
-        if(index < mQuads.size()){
-            mQuads[index].SetHeight(pos.z());
-            mQuads[index+1].SetHeight(pos.z());
-            mQuads[index-1].SetHeight(pos.z());
-            mQuads[index+width-1].SetHeight(pos.z());
-        }
+
     }
 
     //Lager vertexer
     for (int i = 0; i < mQuads.size(); i++) {
         //Lager vertexer
         mVertices.push_back(Vertex(mQuads[i].GetCenter().x, mQuads[i].GetHeight(), mQuads[i].GetCenter().y, sin(i), cos(i), tan(i)));
+
     }
 
     //Indeksering
@@ -177,17 +220,18 @@ Result SurfaceMesh::GetHeight(QVector3D pos)
     //qDebug() << "Getting barycetric for point " << pos << ", x and z is " << x << " , " << z;
     //qDebug() << "Index is therefore " << x+(((width)/res)*z) << " for point " << pos;
     //First vertex of the triangle
-    v1 = mVertices[x+(((width-1))*z)            ];
+
+    v1 = mVertices[trunc(x+(((width/res)-1)*z)                  )];
     //Above
-    v2 = mVertices[x+(((width-1))*z)-width  ];
+    v2 = mVertices[trunc(x+(((width/res)-1)*z)-(width/res)-1    )];
     //To the right
-    v3 = mVertices[x+(((width-1))*z)+1      ];
-    //Under the right
-    v4 = mVertices[x+(((width-1))*z)+width+1];
+    v3 = mVertices[trunc(x+(((width/res)-1)*z)+1                )];
+    //Under the rigtrunc(ht
+    v4 = mVertices[trunc(x+(((width/res)-1)*z)+(width/res)-1+1  )];
     //Under v1
-    v5 = mVertices[x+(((width-1))*z)+width  ];
+    v5 = mVertices[trunc(x+(((width/res)-1)*z)+(width/res)-1    )];
     //Left of v1
-    v6 = mVertices[x+(((width-1))*z)-1          ];
+    v6 = mVertices[trunc(x+(((width/res)-1)*z)-1                )];
 
     //Sjekker for hver trekant som er inni quadden
      QVector3D bary;
