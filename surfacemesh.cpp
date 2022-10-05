@@ -35,14 +35,14 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     //Numerne er ganske ville så gå gjennom, så jeg går gjennom for å endre de
     for (int i = 0; i < points.size(); i++) {
         if (points[i] >557000 && points[i] < 558000) {
-            points[i] -= 557061;
+            points[i] -= 557060;
         }
         else if (points[i] > 6550000 && points[i] < 6560000) {
-            points[i] -= 6550293;
+            points[i] -= 6550292;
         }
     }
 
-    if(false){
+    if(0){
         for (int i = 0; i < points.size(); i+=3) {
             //Lager vertexer            
             mVertices.push_back(Vertex(points[i], points[i+2], points[i+1], cos(sin(tan(i))), sin(cos(tan(i))), tan(sin(cos(i)))));
@@ -62,17 +62,20 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
     //Finn hvem quad hvert punkt er i, høyden til quaden blir dratt 0.1 i retningen av punktet
     float index = 0;
     QVector3D pos;
-    for(int i = 0; i < points.size(); i+=33){
+    for(int i = 0; i < points.size(); i+=3){
         pos = {points[i], points[i+1], points[i+2]};
+        //Incase the points are outside the width of convex hull
         if(pos.x() > width || pos.y() > height){
             break;
         }
-        //Incase the points are outside the width of convex hull
-        pos /= res;
-        index = trunc(pos.x()) + ((width-1) * pos.y());
+        //pos /= res;
+        index = pos.x() + ((width-1) * pos.y());
         //qDebug() << " Found index " << index << " for point " << pos;
         if(index < mQuads.size()){
-            mQuads[index].AddHeight(pos.z()*res);
+            mQuads[index].SetHeight(pos.z());
+            mQuads[index+1].SetHeight(pos.z());
+            mQuads[index-1].SetHeight(pos.z());
+            mQuads[index+width-1].SetHeight(pos.z());
         }
     }
 
@@ -169,30 +172,24 @@ Result SurfaceMesh::GetHeight(QVector3D pos)
     Result r;
     r.height =0;
     float a = 0, b = 0, c = 0, height = 0;
-    float x = pos.x()/res;
-    float z = pos.z()/res;
-    qDebug() << "Getting barycetric for point " << pos << ", x and z is " << x << " , " << z;
-    qDebug() << "Index is therefore " << x+((width-1)/res*z);
+    float x = (pos.x())/res;
+    float z = (pos.z())/res;
+    //qDebug() << "Getting barycetric for point " << pos << ", x and z is " << x << " , " << z;
+    //qDebug() << "Index is therefore " << x+(((width)/res)*z) << " for point " << pos;
     //First vertex of the triangle
-    v1 = mVertices[trunc(x+((width/res)*z)              )];
+    v1 = mVertices[x+(((width-1))*z)            ];
     //Above
-    v2 = mVertices[trunc(x+((width/res)*z)-width/res    )];
+    v2 = mVertices[x+(((width-1))*z)-width  ];
     //To the right
-    v3 = mVertices[trunc(x+((width/res)*z)+1            )];
-    //Under the rigtrunc(ht
-    v4 = mVertices[trunc(x+((width/res)*z)+width/res+1  )];
+    v3 = mVertices[x+(((width-1))*z)+1      ];
+    //Under the right
+    v4 = mVertices[x+(((width-1))*z)+width+1];
     //Under v1
-    v5 = mVertices[trunc(x+((width/res)*z)+width/res    )];
+    v5 = mVertices[x+(((width-1))*z)+width  ];
     //Left of v1
-    v6 = mVertices[trunc(x+((width/res)*z)-1            )];
+    v6 = mVertices[x+(((width-1))*z)-1          ];
 
-     v1.y = 100;
-     v2.y = 100;
-     v3.y = 100;
-     v4.y = 100;
-     v5.y = 100;
-     v6.y = 100;
-    //Sjekker for trekant 1
+    //Sjekker for hver trekant som er inni quadden
      QVector3D bary;
     for(int i = 0; i < 5; i++){
         if(i == 0){
@@ -206,19 +203,19 @@ Result SurfaceMesh::GetHeight(QVector3D pos)
             inUseVertex3 = v4;
         }else if(i == 2){
             inUseVertex1 = v1;
-            inUseVertex2 = v4;
-            inUseVertex3 = v5;
+            inUseVertex2 = v3;
+            inUseVertex3 = v4;
         }else if(i == 3){
             inUseVertex1 = v1;
             inUseVertex2 = v5;
             inUseVertex3 = v6;
         }else if(i == 4){
             inUseVertex1 = v1;
-            inUseVertex2 = v6;
-            inUseVertex3 = v2;
+            inUseVertex2 = v2;
+            inUseVertex3 = v6;
         }
         bary =  GetBarycentric(pos, inUseVertex1, inUseVertex2, inUseVertex3);
-        if(((0 < bary.x()) && (bary.x() < 1)) && ((0 < bary.y()) && (bary.y() < 1)) && ((0 < bary.z()) && (bary.z() < 1))){
+        if(((0 <= bary.x()) && (bary.x() <= 1)) && ((0 <= bary.y()) && (bary.y() <= 1)) && ((0 <= bary.z()) && (bary.z() <= 1))){
             //Er denne trekanten
             a = inUseVertex1.y * bary.x();
             b = inUseVertex2.y * bary.y();
@@ -228,12 +225,14 @@ Result SurfaceMesh::GetHeight(QVector3D pos)
             r.v1 = inUseVertex1;
             r.v2 = inUseVertex2;
             r.v3 = inUseVertex3;
-            qDebug() << "Returned triangle 1 " << r.height;
+            //qDebug() << "Returned triangle 1 " << r.height;
+            //qDebug() << bary;
             r.friction = 0.2;
             return r;
         }
         qDebug() << bary;
     }
+
     return r;
 }
 

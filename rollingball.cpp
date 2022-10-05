@@ -39,14 +39,14 @@ void RollingBall::DoPhysics()
             p1 = QVector3D(v1->x, v1->y, v1->z);
             p2 = QVector3D(v2->x, v2->y, v2->z);
             p3 = QVector3D(v3->x, v3->y, v3->z);
-            qDebug() << p3;
-            qDebug() << p2;
-            qDebug() << p1;
+            //qDebug() << p3;
+            //qDebug() << p2;
+            //qDebug() << p1;
             //Finner normalen
             a = p2 - p1;
             b = p3 - p1;
             normal = QVector3D::crossProduct(a, b).normalized();
-            qDebug() << "Normal : " << normal;
+            //qDebug() << "Normal : " << normal;
             //Akselerasjon, Lignign 7
             QVector3D acc = -gravity.y() * QVector3D(normal.x() * normal.y(), normal.y() * normal.z(), pow(normal.y(), 2)-1);
             //R = r0 + v0t + 1/2at^2, delt på 60 for dt = 1/60, 60 fps
@@ -66,7 +66,7 @@ void RollingBall::DoPhysics()
                      //Lage punkter fra de gamle vertexene
                      //Regne normalen mellom planene    
                      float alpha = QVector3D::crossProduct(normal, oldNormal).length();
-                     qDebug() << "alpha: " << alpha;
+                     //qDebug() << "alpha: " << alpha;
                      if(alpha <= 3.14f){
                          //Oppover møte
                      }else{
@@ -74,23 +74,23 @@ void RollingBall::DoPhysics()
                      }
                      //Finner en vector mellom de to veggene
                      QVector3D x = (normal + oldNormal)/((normal+oldNormal).lengthSquared());
-                     qDebug() << "x: " << x;
+                     //qDebug() << "x: " << x;
                      //Formel 8.8 skal finne den nye hastighet vektoren
                      QVector3D nyHastighet = oldVel - 2*(oldVel*x)*x;
 
-                     qDebug() << "Ny hast:" << nyHastighet;
-                     qDebug() << "Gammel hast: " << oldVel;
+                     //qDebug() << "Ny hast:" << nyHastighet;
+                     //qDebug() << "Gammel hast: " << oldVel;
                      oldVel = nyHastighet;
                     //Finne om det er kollisjon
                      QVector3D r = GetPosition() - oldPos;
                      if(r.lengthSquared() <= radius){
                         //Har kollisjon
-                        qDebug() << "kollisjojn";
+                        //qDebug() << "kollisjojn";
                         //Sett ny posisjon over punktet
 
                      }else{
                         //Har ikke kollisjon
-                        qDebug() << "ikke kollisjon";
+                        //qDebug() << "ikke kollisjon";
                      }
                 }
             }

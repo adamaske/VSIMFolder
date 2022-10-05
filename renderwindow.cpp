@@ -345,14 +345,14 @@ void RenderWindow::StartRain()
     int maxZ = 150;
     float minZ = 0;
 
-    for(int i = 0; i < 1; i++){
-        QVector3D pos(49, 20,49);//(minX + (rand() % maxX), minY + (rand() % maxY), minZ + (rand() % maxZ));
+    for(int i = 0; i < rainAmount; i++){
+        QVector3D pos(minX + (rand() % maxX), minY + (rand() % maxY), minZ + (rand() % maxZ));
         RollingBall* rain = new RollingBall( "../VSIMFolder/ball.obj",mShaders["PlainShader"]);
         rain->init();
         rain->SetSurface(mSurface);
         rain->SetPosition(pos);
         rain->SetScale(QVector3D(5,5,5));
-        qDebug() << pos;
+        //qDebug() << pos;
         rain->EnablePhysics();
         mRain.push_back(rain);
     }

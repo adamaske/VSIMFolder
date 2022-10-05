@@ -31,28 +31,24 @@ struct Quad {
     Point bottomRight;
     Point bottomLeft;
 
-    float height = 21;
-    int amount = 0;
+    float height = 1;
+    int amount = 1;
     void AddHeight(float h){
 
         height += h;
         amount++;
     }
+    void SetHeight(float h){
+        height = h;
+    }
     float GetHeight() {
-        if(amount == 0 || height == 0){
-            return 1;
-        }
-        return height / amount;
+        //if(amount == 0 || height == 0){
+        //    return 1;
+        //}
+        return height;
     }
     Point GetCenter() {
         return Point{ (topRight.x + topLeft.x) / 2, (topRight.y + bottomLeft.y) / 2};
-    }
-    bool IsPointInMe(Point p){
-        if(p.x > topLeft.x && p.x < topRight.x  && p.y < topLeft.y && p.y > bottomLeft.y){
-            return true;
-        }else{
-            return false;
-        }
     }
 };
 
@@ -70,9 +66,9 @@ public:
     //
     Result GetHeight(QVector3D pos);
 
-    float width =1000;
-    float height=1000;
-    float res = 10;
+    float width =   300;
+    float height=   300;
+    float res =     2 ;
 
     //Barysentriske ting
     //First v
