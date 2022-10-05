@@ -5,15 +5,13 @@
 #include "visualobject.h"
 
 class Vertex;
+
 struct Result{
     float height;
     Vertex v1;
     Vertex v2;
     Vertex v3;
     float friction = 0;
-
-public:
-    void setV1(const Vertex &newV1);
 };
 
 struct Point {
@@ -33,14 +31,17 @@ struct Quad {
     Point bottomRight;
     Point bottomLeft;
 
-    float height = 40;
-    int amount = 1;
+    float height = 21;
+    int amount = 0;
     void AddHeight(float h){
+
         height += h;
         amount++;
     }
     float GetHeight() {
-
+        if(amount == 0 || height == 0){
+            return 1;
+        }
         return height / amount;
     }
     Point GetCenter() {
@@ -52,17 +53,6 @@ struct Quad {
         }else{
             return false;
         }
-    }
-};
-struct Triangle {
-public:
-    Point p1;
-    Point p2;
-    Point p3;
-    void SetXYZ(Point a, Point b, Point c) {
-        p1 = a;
-        p2 = b;
-        p3 = c;
     }
 };
 
@@ -80,9 +70,9 @@ public:
     //
     Result GetHeight(QVector3D pos);
 
-    float width =600;
-    float height = 600;
-    float res = 5;
+    float width =1000;
+    float height=1000;
+    float res = 10;
 
     //Barysentriske ting
     //First v
@@ -93,6 +83,14 @@ public:
     Vertex v3;
     //Vertex ;
     Vertex v4;
+    //Vertex ;
+    Vertex v5;
+    //Vertex ;
+    Vertex v6;
+
+    Vertex inUseVertex1;
+    Vertex inUseVertex2;
+    Vertex inUseVertex3;
 
     QVector3D a;
     QVector3D b;
@@ -101,10 +99,10 @@ public:
     QVector3D x1;
     QVector3D x2;
 
-     QVector3D normal;
+    QVector3D normal;
 
-     QVector3D p;
-     QVector3D q;
+    QVector3D p;
+    QVector3D q;
 };
 
 #endif // SURFACEMESH_H
