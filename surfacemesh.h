@@ -26,29 +26,29 @@ public:
 };
 
 struct Quad {
-    Point topRight;
-    Point topLeft;
-    Point bottomRight;
-    Point bottomLeft;
+    float topRight;
+    float topLeft;
+    float bottomRight;
+    float bottomLeft;
 
     float height = 1;
-    int amount = 0;
-    void AddHeight(float h){
+    int amount = 1;
 
+    void AddHeight(float h){
         height += h;
         amount++;
     }
+
     void SetHeight(float h){
         height = h;
     }
+
     float GetHeight() {
-        if(amount == 0 || height == 0){
-            return 15;
-        }
         return height / amount;
     }
+
     Point GetCenter() {
-        return Point{ (topRight.x + topLeft.x) / 2, (topRight.y + bottomLeft.y) / 2};
+        return Point{ (topRight + topLeft) / 2, (bottomRight + bottomLeft) / 2};
     }
 };
 
@@ -66,8 +66,8 @@ public:
     //
     Result GetHeight(QVector3D pos);
 
-    float width =   300;
-    float height=   300;
+    float width =   1000;
+    float height=   1000;
     float res =     20 ;
 
     //Barysentriske ting

@@ -3,6 +3,7 @@
 
 VisualPoint::VisualPoint(const std::vector<Vertex>& v)
 {
+    mMatrix.setToIdentity();
     mVertices = v;
 }
 
@@ -39,7 +40,7 @@ void VisualPoint::draw()
 
     glBindVertexArray(mVAO);
     glUniformMatrix4fv(mMatrixUniform, 1, GL_FALSE, mMatrix.constData());
-    glPointSize(5.0f);
-    glDrawArrays(GL_POINTS, 0, mVertices.size());
+    glPointSize(10.0f);
+        glDrawArrays(GL_POINTS, 0, mVertices.size());
 }
 

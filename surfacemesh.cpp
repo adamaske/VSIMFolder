@@ -34,25 +34,16 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
 
 
     //Numerne er ganske ville så gå gjennom, så jeg går gjennom for å endre de
-    //for (int i = 0; i < points.size(); i++) {
-    //    if (points[i] >557000 && points[i] < 558000) {
-    //        points[i] -= 557060;
-    //    }
-    //    else if (points[i] > 6550000 && points[i] < 6560000) {
-    //        points[i] -= 6550292;
-    //    }
-    //}
     for (int i = 0; i < points.size(); i++) {
         if (points[i] >557000 && points[i] < 558000) {
-            points[i] /= 100000;
+            points[i] -= 557060;
         }
         else if (points[i] > 6550000 && points[i] < 6560000) {
-            points[i] /= 1000000;
+            points[i] -= 6550292;
         }
-        points[i] = trunc(points[i]);
     }
 
-    if(true){
+    if(false){
         for(int i= 0; i < points.size(); i+=3){
             mVertices.push_back(Vertex(points[i], points[i+2], points[+1], 1,1,1));
         }
@@ -96,31 +87,24 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
 
     //Lager convex hull
     std::vector<Quad> mQuads;
-    for (double i = 0; i < height; i+=res) {
-        for (double j = 0; j < width; j+=res) {
+    for (float i = 0; i < height; i+=res) {
+        for (float j = 0; j < width; j+=res) {
             //Top right, top left, bottom right, bottom left
-            mQuads.push_back(Quad{ Point{j, i}, Point{j + res, i}, Point{j, i + res}, Point{j + res, i + res} });
+            mQuads.push_back(Quad{ j, j+res, i, i+res });
         }
     }
+
 
     //Finn hvem quad hvert punkt er i, høyden til quaden blir dratt 0.1 i retningen av punktet
     float index = 0;
     QVector3D pos;
-    for(int i = 0; i < points.size(); i+=3){
+    for(int i = 0; i < points.size(); i+=333){
         pos = {points[i], points[i+1], points[i+2]};
-        //Incase the points are outside the width of convex hull
-        if(pos.x() > width || pos.y() > height || pos.x() < 0 || pos.y() < 0 || pos.z() <0){
-
-        }else{
-            //pos /= res;
-            index = (pos.x()/res) + (((width/res)-1) * pos.y()/res);
-            index = trunc(index);
-            //qDebug() << " Found index " << index << " for point " << pos;
-            if(index < mQuads.size()){
-                mQuads[index].AddHeight(pos.z());
-            }
+        index = (pos.x()/res) + (((width/res)-1) * (pos.y()/res));
+        index = trunc(index);
+        if(index < mQuads.size()){
+            mQuads[index].AddHeight(pos.z());
         }
-
     }
 
     //Lager vertexer
@@ -135,12 +119,18 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
         for(int i = 0; i < (width/res)-1; i++){
             for(int k = 0; k < 2; k++){
                 if(k == 0){
+                    //Første index
                     mIndices.push_back(i+((width/res)*j));
+                    //Høyre for første
                     mIndices.push_back(i+((width/res)*j)+1);
+                    //Under første
                     mIndices.push_back(i+((width/res)*j)+width/res);
                 }else{
+                    //Høyre for første
                     mIndices.push_back(i+((width/res)*j)+1);
+                    //Under første
                     mIndices.push_back(i+((width/res)*j)+width/res);
+                    //Til høyre for under første
                     mIndices.push_back(i+((width/res)*j)+width/res+1);
                 }
             }

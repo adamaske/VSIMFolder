@@ -4,7 +4,7 @@
 #include "shader.h"
 RollingBall::RollingBall(std::string fileName, Shader* shader) : ObjMesh(fileName, shader)
 {
-    oldPos = GetPosition();
+    //oldPos = GetPosition();
 }
 
 void RollingBall::SetSurface(VisualObject* surface)
@@ -25,28 +25,25 @@ void RollingBall::draw()
     glBindVertexArray(0);
     if(bDrawSpline && mSpline){
         mSpline->draw();
+        if(mControlPointVisual){
+           mControlPointVisual->draw();
+        }
     }
+
 }
 
 void RollingBall::DoPhysics()
 {
     QVector3D gravity(0, -9.81f, 0);
-
-    if(true){
-        //Bare tyngdekraften påvirker ballen
-        SetPosition(oldPos + oldVel/60 + 1/2*gravity/60);
-        oldVel = oldVel + gravity /60;
-        oldPos = GetPosition();
-        return;
-    }
+    radius = GetScale().x()/2;
     if(mSurfaceMesh){
         //Får resultatet fra surfacemesh
         Result r = mSurfaceMesh->GetHeight(GetPosition());
         //Er ballen i luften? Bare rull på overflaten så lenge ballen er minst x nære overflaten
-        if(GetPosition().y() > r.height + 1){
+        if(GetPosition().y() > r.height + 5){
             //Bare tyngdekraften påvirker ballen
             SetPosition(GetPosition() + oldVel/60 + 1/2*gravity/60);
-            oldVel = oldVel + gravity /60;
+            oldVel = oldVel + gravity/60;
             oldPos = GetPosition();
             return;
         }
@@ -85,28 +82,13 @@ void RollingBall::DoPhysics()
                      //Beregner normalen til kolisjonsplanet, ligning 9
                      //Lage punkter fra de gamle vertexene
                      //Regne normalen mellom planene    
-                     float alpha = QVector3D::crossProduct(normal, oldNormal).length();
-                     //qDebug() << "alpha: " << alpha;
-                     if(alpha <= 3.14f){
-                         //Oppover møte
-                     }else{
-                         //Nedover møte
-                     }
                      //Finner en vector mellom de to veggene
                      QVector3D x = (normal + oldNormal)/((normal+oldNormal).lengthSquared());
                      //Formel 8.8 skal finne den nye hastighet vektoren
                      QVector3D nyHastighet = oldVel - 2*(oldVel*x)*x;     
                      oldVel = nyHastighet;
-                    //Finne om det er kollisjon
-                     QVector3D r = GetPosition() - oldPos;
-                     if(r.lengthSquared() <= radius){
-                        //Har kollisjon
-                     }else{
-                        //Har ikke kollisjon
-                     }
                 }
             }
-
             oldv1 = &r.v1;
             oldv2 = &r.v2;
             oldv3 = &r.v3;
@@ -114,6 +96,12 @@ void RollingBall::DoPhysics()
             oldPos = GetPosition();
         }
 
+    }else{
+        //Bare tyngdekraften påvirker ballen
+        SetPosition(GetPosition() + oldVel/60 + 1/2*gravity/60 + QVector3D(sin(mLived), 0 , sin(mLived)));
+        oldVel = oldVel + gravity /60;
+        oldPos = GetPosition();
+        return;
     }
 }
 
@@ -150,50 +138,55 @@ void RollingBall::CreateSplinePoint()
     Vertex* v = new Vertex(pos.x(), pos.y(), pos.z());
     qDebug() << "Creating control point at " << pos;
     qDebug() << "Vertexen er  på : " <<  QVector3D(v->x, v->y, v->z);
-    mControlPoints.push_back(v);
+    mControlPoints.push_back(*v);
 }
 
 void RollingBall::CreateSpline()
 {
     t.clear();
     float step = 0.01;
-    n = mControlPoints.size()-1;
+    n = mControlPoints.size();
     d = 2; //for kvadratisk
     //Skjøter i hver ende
     float s = d + 1; //d + 1 like skjøter i hver ende
     float total = n + d + 1;
     //Lager skjøtevektoren
-    for(int i = 0; i < total-s; i++){
+    for(int i = 0; i < total; i++){
         if(i == 0){
             for(int k = 0 ; k < s ; k++){
                 t.push_back(i);
+
             }
         }else
         if(i == total-s-1){
             for(int k = 0; k < s; k++){
                 t.push_back(i);
             }
+            break;
         }else{
             t.push_back(i);
         }
     }
+    for(int i = 0; i < t.size(); i++){
+        qDebug() << t[i];
+    }
     //Lager C, y kordinatene, z i mitt prosjekt
     for(int i = 0; i < mControlPoints.size(); i++){
-        c.push_back(QVector3D(mControlPoints[i]->x, mControlPoints[i]->y,mControlPoints[i]->z));
+        c.push_back(QVector3D(mControlPoints[i].x, mControlPoints[i].y,mControlPoints[i].z));
     }
     //Trenger basisfunksjoner??
     std::vector<Vertex> mVisualPoints;
-    for(float time = 0; time < 1; time += step){
+    for(float time = 0; time <= 1; time += step){
         QVector3D point = EvaluateBezier(time);
         qDebug() << "Bezier function returned : " << point << " for time " << time;
 
-        mVisualPoints.push_back(Vertex(point.x(), point.y(), point.z(), 1, 1,1));
+        mVisualPoints.push_back(Vertex(point.x(), point.y(), point.z(), sin(time), tan(time),cos(time)));
     }
     mSpline = new VisualPoint(mVisualPoints);
+    mControlPointVisual = new VisualPoint(mControlPoints);
+    mControlPointVisual->init();
     mSpline->init();
     bDrawSpline = true;
-
-    //f(t) = (x(t),y(t))
 }
 
 QVector3D RollingBall::EvaluateBezier(float x)
@@ -201,7 +194,6 @@ QVector3D RollingBall::EvaluateBezier(float x)
     //B_i,_d(x) = w_i,_d(x)*B_i,_d-1(x)+(1-w_i+1,d(x))*B_i+1,_d-1(x)
     //hvor w_i,_d = (x-t)/(t_i+d - t_i) dersom t_i < t_i+d, 0 ellers
     //Og B_i,0 = 1 dersom t_i <= t_i+1
-
     //C_i = y kordinat til points[i]
     //f(x) = for(i = 0; i < n-1; i++){ c_i * B_i,_d(x)}
 
@@ -219,7 +211,7 @@ QVector3D RollingBall::EvaluateBezier(float x)
             a[i] = a[i] * (1-w) + a [i +1] * w;
         }
     }
-    return a[0] ;
+    return a[0];
 }
 
 //Dette er en clamped curve så denne funksjonen holder

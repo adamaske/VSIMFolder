@@ -33,12 +33,13 @@ private:
     //Bspline variabler
     int mSplinePointCounter = 60;
     void CreateSplinePoint();
-    std::vector<Vertex*> mControlPoints;
+    std::vector<Vertex> mControlPoints;
 
     void CreateSpline();
     QVector3D EvaluateBezier(float x);
 
     class VisualPoint* mSpline;
+    class VisualPoint* mControlPointVisual;
     bool bDrawSpline = false;
 
     std::vector<float> t;
