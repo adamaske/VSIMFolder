@@ -1,8 +1,5 @@
 #include "visualpoint.h"
 #include "vertex.h"
-VisualPoint::VisualPoint()
-{
-}
 
 VisualPoint::VisualPoint(const std::vector<Vertex>& v)
 {

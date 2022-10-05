@@ -4,7 +4,7 @@
 #include "shader.h"
 RollingBall::RollingBall(std::string fileName, Shader* shader) : ObjMesh(fileName, shader)
 {
-
+    oldPos = GetPosition();
 }
 
 void RollingBall::SetSurface(VisualObject* surface)
@@ -23,7 +23,7 @@ void RollingBall::draw()
     glBindVertexArray( mVAO);
     glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
-    if(bDrawSpline&&mSpline){
+    if(bDrawSpline && mSpline){
         mSpline->draw();
     }
 }
@@ -34,7 +34,7 @@ void RollingBall::DoPhysics()
 
     if(true){
         //Bare tyngdekraften påvirker ballen
-        SetPosition(GetPosition() + oldVel/60 + 1/2*gravity/60);
+        SetPosition(oldPos + oldVel/60 + 1/2*gravity/60);
         oldVel = oldVel + gravity /60;
         oldPos = GetPosition();
         return;
@@ -148,14 +148,15 @@ void RollingBall::CreateSplinePoint()
 {
     QVector3D pos = GetPosition();
     Vertex* v = new Vertex(pos.x(), pos.y(), pos.z());
-
+    qDebug() << "Creating control point at " << pos;
+    qDebug() << "Vertexen er  på : " <<  QVector3D(v->x, v->y, v->z);
     mControlPoints.push_back(v);
 }
 
 void RollingBall::CreateSpline()
 {
     t.clear();
-    float step = 0.1;
+    float step = 0.01;
     n = mControlPoints.size()-1;
     d = 2; //for kvadratisk
     //Skjøter i hver ende
@@ -184,9 +185,12 @@ void RollingBall::CreateSpline()
     std::vector<Vertex> mVisualPoints;
     for(float time = 0; time < 1; time += step){
         QVector3D point = EvaluateBezier(time);
+        qDebug() << "Bezier function returned : " << point << " for time " << time;
+
         mVisualPoints.push_back(Vertex(point.x(), point.y(), point.z(), 1, 1,1));
     }
     mSpline = new VisualPoint(mVisualPoints);
+    mSpline->init();
     bDrawSpline = true;
 
     //f(t) = (x(t),y(t))
@@ -208,7 +212,7 @@ QVector3D RollingBall::EvaluateBezier(float x)
         a[d-j]= c[my-j];
     }
     for(int k=d ; k>0; k--) {
-        int j = my=k ;
+        int j = my-k;
         for ( int i =0; i<k ; i++) {
             j ++;
             float w = (x-t[j] ) / ( t[j+k]-t[j] ) ;
@@ -220,7 +224,7 @@ QVector3D RollingBall::EvaluateBezier(float x)
 
 //Dette er en clamped curve så denne funksjonen holder
 int RollingBall::FindKnotInterval(float x){
-    int my = n-1;
+    int my = n;
     while(x < t[my]){
         my--;
     }

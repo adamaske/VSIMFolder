@@ -22,6 +22,7 @@ public:
     void DisableSpline();
     int GetLived(){return mLived;};
     int GetLifetime(){return mLifetime;};
+    class VisualPoint* GetSpline(){return mSpline;};
 private:
     VisualObject* m_Surface;
 

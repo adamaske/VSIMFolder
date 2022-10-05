@@ -4,7 +4,6 @@
 class VisualPoint : public VisualObject
 {
 public:
-    VisualPoint();
     VisualPoint(const std::vector<Vertex>& v);
     ~VisualPoint() override;
     void init() override;
