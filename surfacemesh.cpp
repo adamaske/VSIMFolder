@@ -59,39 +59,41 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
         return;
     }
     qDebug() << "Amount of points : " << points.size();
-
-    float highestX;
-    float  lowestX;
-    float highestY;
-    float  lowestY;
-    float highestZ;
-    float  lowestZ;
-    for(int i = 0; i < points.size(); i+=3){
-        if(points[i] > highestX){
-            highestX = points[i];
+    if(true){
+        float highestX;
+        float  lowestX;
+        float highestY;
+        float  lowestY;
+        float highestZ;
+        float  lowestZ;
+        for(int i = 0; i < points.size(); i+=3){
+            if(points[i] > highestX){
+                highestX = points[i];
+            }
+            if(points[i] < lowestX){
+                lowestX = points[i];
+            }
+            if(points[i+1] > highestY){
+                highestY = points[i+1];
+            }
+            if(points[i+1] < lowestY){
+                lowestY = points[i+1];
+            }
+            if(points[i+2] > highestZ){
+                highestZ = points[i+2];
+            }
+            if(points[i+2] < lowestZ){
+                lowestZ = points[i+2];
+            }
         }
-        if(points[i] < lowestX){
-            lowestX = points[i];
-        }
-        if(points[i+1] > highestY){
-            highestY = points[i+1];
-        }
-        if(points[i+1] < lowestY){
-            lowestY = points[i+1];
-        }
-        if(points[i+2] > highestZ){
-            highestZ = points[i+2];
-        }
-        if(points[i+2] < lowestZ){
-            lowestZ = points[i+2];
-        }
+        qDebug() << "Highest X: " << highestX;
+        qDebug() << "Lowest  X: " <<  lowestX;
+        qDebug() << "Highest Y: " << highestY;
+        qDebug() << "Lowest  Y: " <<  lowestY;
+        qDebug() << "Highest Z: " << highestZ;
+        qDebug() << "Lowest  Z: " <<  lowestZ;
     }
-    qDebug() << "Highest X: " << highestX;
-    qDebug() << "Lowest  X: " <<  lowestX;
-    qDebug() << "Highest Y: " << highestY;
-    qDebug() << "Lowest  Y: " <<  lowestY;
-    qDebug() << "Highest Z: " << highestZ;
-    qDebug() << "Lowest  Z: " <<  lowestZ;
+
     //Lager convex hull
     std::vector<Quad> mQuads;
     for (double i = 0; i < height; i+=res) {

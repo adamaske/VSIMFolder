@@ -382,6 +382,10 @@ void RenderWindow::DoRain()
                 delete temp;
                 break;
             }
+            //
+            if(mRain[i]->GetLived() >= 300){
+                mRain[i]->EnableSpline();
+            }
             mRain[i]->UpdateTransform();
             mRain[i]->draw();
         }

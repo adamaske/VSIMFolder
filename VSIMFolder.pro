@@ -16,7 +16,8 @@ SOURCES += main.cpp \
     texture.cpp \
     vector3d.cpp \
     vertex.cpp \
-    visualobject.cpp
+    visualobject.cpp \
+    visualpoint.cpp
 
 HEADERS += \
     logger.h \
@@ -30,7 +31,8 @@ HEADERS += \
     texture.h \
     vector3d.h \
     vertex.h \
-    visualobject.h
+    visualobject.h \
+    visualpoint.h
 FORMS += \
     mainwindow.ui
 
