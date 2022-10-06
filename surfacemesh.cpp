@@ -2,6 +2,7 @@
 #include "vertex.h"
 #include <iostream>
 #include <string>
+#include <algorithm>
 SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
 {
     std::ifstream file("../VSIMFolder/HeightData/fullData.txt");
@@ -41,11 +42,13 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
         else if (points[i] > 6550000 && points[i] < 6560000) {
             points[i] -= 6550292;
         }
+
+        std::clamp(points[i], 0.f, 1000.f);
     }
 
     if(false){
         for(int i= 0; i < points.size(); i+=3){
-            mVertices.push_back(Vertex(points[i], points[i+2], points[+1], 1,1,1));
+            mVertices.push_back(Vertex(points[i], points[i+2], points[i+1], 1,1,1));
         }
         return;
     }
@@ -94,18 +97,24 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
         }
     }
 
-
     //Finn hvem quad hvert punkt er i, høyden til quaden blir dratt 0.1 i retningen av punktet
     float index = 0;
     QVector3D pos;
     for(int i = 0; i < points.size(); i+=333){
         pos = {points[i], points[i+1], points[i+2]};
-        index = (pos.x()/res) + (((width/res)-1) * (pos.y()/res));
-        index = trunc(index);
-        if(index < mQuads.size()){
-            mQuads[index].AddHeight(pos.z());
+        if(pos.x() > width || pos.y() > height){
+            //Gjør ignenting
+        }else{
+            index = trunc((pos.x()/res)) + (trunc((width/res)-1) * trunc(pos.y()/res));
+            index = trunc(index);
+            if(index < mQuads.size()){
+                mQuads[index].AddHeight(pos.z());
+            }
         }
     }
+
+    //Test
+   // mQuads[500].AddHeight(30);
 
     //Lager vertexer
     for (int i = 0; i < mQuads.size(); i++) {
@@ -116,14 +125,14 @@ SurfaceMesh::SurfaceMesh(Shader* s) : VisualObject(s)
 
     //Indeksering
     for(int j = 0; j < (height/res)-1; j++){
-        for(int i = 0; i < (width/res)-1; i++){
+        for(int i = 0; i < (width/res)-1 ; i++){
             for(int k = 0; k < 2; k++){
                 if(k == 0){
                     //Første index
                     mIndices.push_back(i+((width/res)*j));
-                    //Høyre for første
+                    ////Høyre for første
                     mIndices.push_back(i+((width/res)*j)+1);
-                    //Under første
+                    ////Under første
                     mIndices.push_back(i+((width/res)*j)+width/res);
                 }else{
                     //Høyre for første
@@ -194,10 +203,11 @@ void SurfaceMesh::draw()
         glDrawArrays(GL_POINTS, 0, mVertices.size());
         break;
     case drawElements:
-        glDrawArrays(GL_TRIANGLES, 0, mVertices.size());//mVertices.size());
+
+        glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, reinterpret_cast<const void*>(0));
         break;
     case arrays:
-        glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, reinterpret_cast<const void*>(0));
+        glDrawArrays(GL_TRIANGLES, 0, mVertices.size());//mVertices.size());
         break;
     }
 }
@@ -207,10 +217,8 @@ Result SurfaceMesh::GetHeight(QVector3D pos)
     Result r;
     r.height =0;
     float a = 0, b = 0, c = 0, height = 0;
-    float x = (pos.x())/res;
-    float z = (pos.z())/res;
-    //qDebug() << "Getting barycetric for point " << pos << ", x and z is " << x << " , " << z;
-    //qDebug() << "Index is therefore " << x+(((width)/res)*z) << " for point " << pos;
+    float x = (trunc(pos.x()))/res;
+    float z = (trunc(pos.z()))/res;
     //First vertex of the triangle
 
     v1 = mVertices[trunc(x+(((width/res)-1)*z)                  )];
@@ -218,7 +226,7 @@ Result SurfaceMesh::GetHeight(QVector3D pos)
     v2 = mVertices[trunc(x+(((width/res)-1)*z)-(width/res)-1    )];
     //To the right
     v3 = mVertices[trunc(x+(((width/res)-1)*z)+1                )];
-    //Under the rigtrunc(ht
+    //Under the right
     v4 = mVertices[trunc(x+(((width/res)-1)*z)+(width/res)-1+1  )];
     //Under v1
     v5 = mVertices[trunc(x+(((width/res)-1)*z)+(width/res)-1    )];

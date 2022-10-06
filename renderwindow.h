@@ -7,7 +7,7 @@
 #include <QElapsedTimer>
 #include <unordered_map>
 #include <QVector3D>
-
+#include "surfacemesh.h"
 class QOpenGLContext;
 class Shader;
 class MainWindow;
@@ -31,6 +31,10 @@ public:
 
     bool mRotate{true};     //Check if triangle should rotate
 
+    void StartRain();
+    void StopRain();
+
+    void SetSurfaceRenderMode(DrawMode mode);
 private slots:
     void render();          //the actual render - function
 
@@ -42,8 +46,7 @@ private:
     //Regnet
     std::vector<RollingBall*> mRain;
     class SurfaceMesh* mSurface;
-    void StartRain();
-    void StopRain();
+
     void DoRain();
     bool bIsRaining = false;
     //Referance to camera

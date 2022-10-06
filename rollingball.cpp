@@ -34,11 +34,12 @@ void RollingBall::draw()
 
 void RollingBall::DoPhysics()
 {
-    QVector3D gravity(0, -9.81f, 0);
+    QVector3D gravity(0, -9.81, 0);
     radius = GetScale().x()/2;
     if(mSurfaceMesh){
         //Får resultatet fra surfacemesh
         Result r = mSurfaceMesh->GetHeight(GetPosition());
+
         //Er ballen i luften? Bare rull på overflaten så lenge ballen er minst x nære overflaten
         if(GetPosition().y() > r.height + 5){
             //Bare tyngdekraften påvirker ballen
@@ -47,6 +48,7 @@ void RollingBall::DoPhysics()
             oldPos = GetPosition();
             return;
         }
+
         //Lagerer vertexene på triangelt
         v1 = &r.v1;
         v2 = &r.v2;
@@ -65,7 +67,7 @@ void RollingBall::DoPhysics()
             normal = QVector3D::crossProduct(a, b).normalized();
             //qDebug() << "Normal : " << normal;
             //Akselerasjon, Lignign 7
-            QVector3D acc = -gravity.y() * QVector3D(normal.x() * normal.y(), normal.y() * normal.z(), pow(normal.y(), 2)-1);
+            QVector3D acc = -gravity * QVector3D(normal.x() * normal.y(), normal.y() * normal.z(), pow(normal.y(), 2)-1);
             //R = r0 + v0t + 1/2at^2, delt på 60 for dt = 1/60, 60 fps
             QVector3D nyPos = currPos + oldVel/60 + 1/2*acc/60;
             //Setter høyde + radius så den sitter på flaten
@@ -98,7 +100,7 @@ void RollingBall::DoPhysics()
 
     }else{
         //Bare tyngdekraften påvirker ballen
-        SetPosition(GetPosition() + oldVel/60 + 1/2*gravity/60 + QVector3D(sin(mLived), 0 , sin(mLived)));
+        SetPosition(GetPosition() + oldVel/60 + 1/2*gravity/60);
         oldVel = oldVel + gravity /60;
         oldPos = GetPosition();
         return;
@@ -136,8 +138,6 @@ void RollingBall::CreateSplinePoint()
 {
     QVector3D pos = GetPosition();
     Vertex* v = new Vertex(pos.x(), pos.y(), pos.z());
-    qDebug() << "Creating control point at " << pos;
-    qDebug() << "Vertexen er  på : " <<  QVector3D(v->x, v->y, v->z);
     mControlPoints.push_back(*v);
 }
 
@@ -178,8 +178,6 @@ void RollingBall::CreateSpline()
     std::vector<Vertex> mVisualPoints;
     for(float time = 0; time <= 1; time += step){
         QVector3D point = EvaluateBezier(time);
-        qDebug() << "Bezier function returned : " << point << " for time " << time;
-
         mVisualPoints.push_back(Vertex(point.x(), point.y(), point.z(), sin(time), tan(time),cos(time)));
     }
     mSpline = new VisualPoint(mVisualPoints);

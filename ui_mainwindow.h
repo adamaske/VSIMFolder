@@ -31,7 +31,8 @@ public:
     QAction *fileExit;
     QWidget *centralWidget;
     QVBoxLayout *verticalLayout;
-    QPushButton *rotationButton;
+    QPushButton *rainButton;
+    QPushButton *drawModeButton;
     QVBoxLayout *OpenGLLayout;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -54,12 +55,19 @@ public:
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
-        rotationButton = new QPushButton(centralWidget);
-        rotationButton->setObjectName(QString::fromUtf8("rotationButton"));
-        rotationButton->setCheckable(true);
-        rotationButton->setChecked(true);
 
-        verticalLayout->addWidget(rotationButton);
+        drawModeButton = new QPushButton(centralWidget);
+        drawModeButton->setObjectName(QString::fromUtf8("drawModeButton"));
+        drawModeButton->setCheckable(true);
+        drawModeButton->setChecked(true);
+
+        rainButton = new QPushButton(centralWidget);
+        rainButton->setObjectName(QString::fromUtf8("rainButton"));
+        rainButton->setCheckable(true);
+        rainButton->setChecked(true);
+
+        verticalLayout->addWidget(rainButton);
+        verticalLayout->addWidget(drawModeButton);
 
         OpenGLLayout = new QVBoxLayout();
         OpenGLLayout->setSpacing(6);
@@ -180,7 +188,8 @@ public:
 #if QT_CONFIG(shortcut)
         fileExit->setShortcut(QCoreApplication::translate("MainWindow", "Ctrl+Q", nullptr));
 #endif // QT_CONFIG(shortcut)
-        rotationButton->setText(QCoreApplication::translate("MainWindow", "Stop rotation", nullptr));
+        drawModeButton->setText(QCoreApplication::translate("MainWindow", "Draw Elements", nullptr));
+        rainButton->setText(QCoreApplication::translate("MainWindow", "Start Rain", nullptr));
         menuFile->setTitle(QCoreApplication::translate("MainWindow", "File", nullptr));
         dockWidgetConsole->setWindowTitle(QCoreApplication::translate("MainWindow", "Output Log", nullptr));
     } // retranslateUi

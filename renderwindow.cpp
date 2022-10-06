@@ -18,7 +18,7 @@
 #include "objmesh.h"
 #include "texture.h"
 #include "rollingball.h"
-#include "surfacemesh.h"
+
 RenderWindow::RenderWindow(const QSurfaceFormat &format, MainWindow *mainWindow)
     : mContext(nullptr), mInitialized(false), mMainWindow(mainWindow)
 
@@ -303,9 +303,7 @@ void RenderWindow::keyPressEvent(QKeyEvent *event)
     if(event->key() == Qt::Key_2){
        mSurface->SetDrawMode(DrawMode::drawElements);
     }
-    if(event->key() == Qt::Key_3){
-       mSurface->SetDrawMode(DrawMode::arrays);
-    }
+
     QVector3D temp = camPos;
     camLookAt = QVector3D(350, 0, 350);
     if(event->key() == Qt::Key_W){
@@ -337,12 +335,12 @@ void RenderWindow::StartRain()
 {
     bIsRaining = true;
     //Spawn rain particles
-    int rainAmount = 15;
-    int maxX = 150;
+    int rainAmount = 50;
+    int maxX = 200;
     float minX = 0;
-    int maxY = 50;
-    float minY = 75;
-    int maxZ = 150;
+    int maxY = 75;
+    float minY = 50;
+    int maxZ = 200;
     float minZ = 0;
 
     for(int i = 0; i < rainAmount; i++){
@@ -352,7 +350,6 @@ void RenderWindow::StartRain()
         rain->SetSurface(mSurface);
         rain->SetPosition(pos);
         rain->SetScale(QVector3D(5,5,5));
-        //qDebug() << pos;
         rain->EnablePhysics();
         mRain.push_back(rain);
     }
@@ -369,6 +366,11 @@ void RenderWindow::StopRain()
     }
     mRain.clear();
     qDebug() << "Stopped rain!";
+}
+
+void RenderWindow::SetSurfaceRenderMode(DrawMode mode)
+{
+    mSurface->SetDrawMode(mode);
 }
 void RenderWindow::DoRain()
 {

@@ -78,21 +78,39 @@ void MainWindow::init()
 //Example of a slot called from the button on the top of the program.
 void MainWindow::on_rotationButton_toggled(bool checked)
 {
-    if(checked)
-    {
-        mRenderWindow->mRotate = true;
-        ui->rotationButton->setText("Stop rotation");
-    }
-    else
-    {
-        mRenderWindow->mRotate = false;
-        ui->rotationButton->setText("Start rotation");
-    }
+
 }
 
 //File menu Exit closes the program
 void MainWindow::on_fileExit_triggered()
 {
     close();       //Shuts down the whole program
+}
+
+
+void MainWindow::on_rainButton_toggled(bool checked)
+{
+    if(checked){
+        ui->rainButton->setText("Stop Rain");
+        mRenderWindow->StartRain();
+    }else{
+        ui->rainButton->setText("Start Rain");
+        mRenderWindow->StopRain();
+    }
+}
+
+
+void MainWindow::on_drawModeButton_toggled(bool checked)
+{
+    if(checked)
+    {
+        mRenderWindow->SetSurfaceRenderMode(DrawMode::drawElements);
+        ui->drawModeButton->setText("Draw Points");
+    }
+    else
+    {
+        mRenderWindow->SetSurfaceRenderMode(DrawMode::points);
+        ui->drawModeButton->setText("Draw Elements");
+    }
 }
 
